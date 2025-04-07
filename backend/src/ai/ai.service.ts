@@ -9,6 +9,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GoogleGenAI } from "@google/genai";
 import * as fs from 'fs';
 import * as path from 'path';
+import axios from 'axios';
 
 @Injectable()
 export class AiService {
@@ -16,14 +17,19 @@ export class AiService {
   private readonly logger = new Logger(AiService.name);
   private promptGenerationModel: any;
   private geminiApiKey: string;
+  private readonly openRouterApiKey: string;
+  private readonly ai: any;
 
   constructor(
     private configService: ConfigService,
     @InjectModel(User.name) private userModel: Model<User>,
   ) {
     this.geminiApiKey = this.configService.get('GEMINI_API_KEY')!;
-    // Get the model using the correct method
+    this.openRouterApiKey = this.configService.get<string>('OPENROUTER_API_KEY')!;
+    
+    // Initialize both AI services
     this.promptGenerationModel = new GoogleGenerativeAI(this.geminiApiKey);
+    this.ai = new GoogleGenAI({ apiKey: this.geminiApiKey });
   }
 
   // MAIN ENTRY POINT: Combined function that orchestrates the entire process
@@ -31,7 +37,7 @@ export class AiService {
     prompt: string,
     adCreatorData: IadCreatorData,
     userEmail: string,
-  ): Promise<{ imageData: string; promptText: string }> { // Updated return type
+  ): Promise<{ imageData: string; promptText: string }> {
     try {
       this.logger.log('Processing complete ad generation request with prompt: ' + prompt?.substring(0, 50));
       
@@ -52,6 +58,9 @@ export class AiService {
       
       // STEP 2: Generate the image using the created design prompt
       const imageData = await this._generateImageFromPrompt(designPrompt, adCreatorData);
+      
+      // Update user credits after successful generation
+      await this.updateUserCredits(userEmail);
       
       // Return only the image data and prompt text
       return {
@@ -95,46 +104,59 @@ export class AiService {
     
     Keep the prompt actionable and focused - it will be used directly for generating the final image.`;
 
-    // Call the Gemini API to generate the prompt
-    const model = this.promptGenerationModel.getGenerativeModel({ model: "gemini-1.5-pro" });
-    const promptResult = await model.generateContent({
-      contents: [
+    try {
+      // Call the OpenRouter API with Gemini model for prompt generation
+      const messages = [
+        {
+          role: 'system',
+          content: 'You are a precise and detail-oriented assistant that generates optimized design prompts for advertisements.'
+        },
         {
           role: 'user',
-          parts: [
-            { text: prompt_text },
-            {
-              inline_data: {
-                mime_type: 'image/jpeg',
-                data: uploadedImage
-              }
-            },
-            {
-              inline_data: {
-                mime_type: 'image/jpeg',
-                data: templateImage
-              }
-            }
+          content: [
+            { type: 'text', text: prompt_text },
+            { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${uploadedImage}` } },
+            { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${templateImage}` } }
           ]
         }
-      ],
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 1024,
-      }
-    });
+      ];
 
-    // Extract and return the generated prompt text
-    const designPrompt = promptResult.response ? promptResult.response.text() : 'Create a professional advertisement featuring the product in the template style';
-    this.logger.log('Generated design prompt: ' + designPrompt.substring(0, 50) + '...');
-    return designPrompt;
+      const response = await axios.post(
+        'https://openrouter.ai/api/v1/chat/completions',
+        {
+          model: 'google/gemini-2.5-pro-exp-03-25:free',
+          messages: messages,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${this.openRouterApiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://yourdomain.com',
+            'X-Title': 'Ad Creator',
+          },
+        },
+      );
+      
+      if (response.data && response.data.choices && response.data.choices[0]?.message?.content) {
+        const designPrompt = response.data.choices[0].message.content.trim();
+        this.logger.log('Generated design prompt: ' + designPrompt.substring(0, 50) + '...');
+        return designPrompt;
+      }
+      
+      // Fallback
+      this.logger.warn('Unexpected API response structure. Using fallback prompt.');
+      return 'Create a professional advertisement featuring the product in the template style';
+    } catch (error) {
+      this.logger.error('Error generating design prompt', error);
+      return 'Create a professional advertisement featuring the product in the template style';
+    }
   }
 
   // HELPER FUNCTION 2: Generate image from prompt
   private async _generateImageFromPrompt(
     designPrompt: string,
     adCreatorData: IadCreatorData,
-  ): Promise<string> { // Changed return type to just string
+  ): Promise<string> {
     // Get image data
     const productImage = this.cleanBase64Data(adCreatorData.uploadedImages[0]);
     const templateImage = this.cleanBase64Data(adCreatorData.selectedTemplateUrl[0]);
@@ -148,32 +170,10 @@ export class AiService {
       
       Generate a high-quality, professional advertisement.`;
 
-      // Initialize the Gemini client with API key from config
-      const ai = new GoogleGenAI({ apiKey: this.geminiApiKey });
-
-      // Call the Gemini 2.0 Flash image generation API
-      const response = await ai.models.generateContent({
+      // Call the Gemini 2.0 Flash image generation API using the newer method
+      const response = await this.ai.models.generateContent({
         model: "gemini-2.0-flash-exp-image-generation",
-        contents: [
-          {
-            role: "user",
-            parts: [
-              { text: content },
-              {
-                inlineData: {
-                  mimeType: "image/jpeg",
-                  data: productImage
-                }
-              },
-              {
-                inlineData: {
-                  mimeType: "image/jpeg",
-                  data: templateImage
-                }
-              }
-            ]
-          }
-        ],
+        contents: content,
         config: {
           responseModalities: ["Text", "Image"],
         }
@@ -183,9 +183,8 @@ export class AiService {
       let textResponse = ''; // Still capturing for logging purposes
 
       // Process response to extract image and text
-      if (response.candidates && response.candidates.length > 0) {
-        const parts = response.candidates[0].content?.parts || [];
-        for (const part of parts) {
+      if (response && response.candidates && response.candidates.length > 0) {
+        for (const part of response.candidates[0].content.parts) {
           if (part.text) {
             textResponse = part.text; // Capture for logging
           } else if (part.inlineData) {
@@ -206,6 +205,28 @@ export class AiService {
     } catch (error) {
       this.logger.error('Error in image generation', error);
       throw new Error('Failed to generate image: ' + (error.message || 'Unknown error'));
+    }
+  }
+
+  // New helper method to update user credits
+  private async updateUserCredits(userEmail: string): Promise<void> {
+    try {
+      const userInfo = await this.userModel.findOne({ email: userEmail });
+      
+      if (!userInfo) {
+        this.logger.warn(`User not found: ${userEmail}`);
+        return;
+      }
+      
+      await this.userModel.updateOne(
+        { email: userEmail },
+        { $inc: { creditsUsed: 1 } },
+      );
+      
+      this.logger.log(`Credits updated successfully for user: ${userEmail}`);
+    } catch (error) {
+      this.logger.error(`Error updating user credits: ${error.message}`, error.stack);
+      // Don't throw here to avoid interrupting the main flow
     }
   }
 

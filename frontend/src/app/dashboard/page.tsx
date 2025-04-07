@@ -25,8 +25,6 @@ export default function Dashboard() {
       return response.data;
     },
     onSuccess: (data) => {
-      console.log("Image generation successful! Received data:", data);
-
       if (data.imageData) {
         const imageUrl = `data:image/png;base64,${data.imageData}`;
         try {
