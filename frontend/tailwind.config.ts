@@ -9,9 +9,18 @@ export default {
   ],
   theme: {
     extend: {
-      backgroundImage: {
-        "main-gradient":
-          "linear-gradient(89.55deg, #4966ff 13.66%, #7760ff 33.9%, #b149ff 61.23%, #e54ff2 95.03%, #ff206e 139.63%)",
+      keyframes: {
+        gradient: {
+          "0%": { backgroundPosition: "0% center" },
+          "100%": { backgroundPosition: "-200% center" },
+        },
+        shimmer: {
+          "100%": { transform: "translateX(100%)" },
+        },
+      },
+      animation: {
+        gradient: "gradient 4s linear infinite",
+        shimmer: "shimmer 2s infinite",
       },
       colors: {
         background: "hsl(var(--background))",
@@ -27,10 +36,30 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          50: "hsl(var(--primary-50))",
+          100: "hsl(var(--primary-100))",
+          200: "hsl(var(--primary-200))",
+          300: "hsl(var(--primary-300))",
+          400: "hsl(var(--primary-400))",
+          500: "hsl(var(--primary-500))",
+          600: "hsl(var(--primary-600))",
+          700: "hsl(var(--primary-700))",
+          800: "hsl(var(--primary-800))",
+          900: "hsl(var(--primary-900))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
+          50: "hsl(var(--secondary-50))",
+          100: "hsl(var(--secondary-100))",
+          200: "hsl(var(--secondary-200))",
+          300: "hsl(var(--secondary-300))",
+          400: "hsl(var(--secondary-400))",
+          500: "hsl(var(--secondary-500))",
+          600: "hsl(var(--secondary-600))",
+          700: "hsl(var(--secondary-700))",
+          800: "hsl(var(--secondary-800))",
+          900: "hsl(var(--secondary-900))",
         },
         muted: {
           DEFAULT: "hsl(var(--muted))",
@@ -59,11 +88,11 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
-      },
-      keyframes: {
-        shimmer: {
-          "100%": { transform: "translateX(100%)" },
-        },
+        xl: "1rem",
+        "2xl": "1.5rem",
+        "3xl": "2rem",
+        "4xl": "2.5rem",
+        full: "9999px",
       },
     },
   },

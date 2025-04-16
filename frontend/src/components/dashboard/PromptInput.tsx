@@ -1,5 +1,5 @@
 import React from "react";
-import { SentIcon } from "hugeicons-react";
+import { SentIcon, SparklesIcon } from "hugeicons-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -22,37 +22,59 @@ const PromptInput: React.FC<PromptInputProps> = ({
         e.preventDefault();
         onSubmit();
       }}
-      className="mb-1 flex items-center rounded-full overflow-hidden bg-white shadow-sm border border-gray-200"
+      className="mb-3 relative z-10"
     >
-      <Input
-        type="text"
-        value={prompt}
-        onChange={(e) => setPrompt(e.target.value)}
-        placeholder="Enter Additional Instructions..."
-        className="w-full h-[56px] px-5 text-gray-700 focus:outline-none text-base bg-transparent border-0"
-        disabled={isPending}
-      />
-      <Button
-        type="submit"
-        className={`h-full px-5 rounded-r-full ${
-          isPending
-            ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-            : "bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white"
-        }`}
-        disabled={isPending}
-      >
-        {isPending ? (
-          <div className="flex items-center gap-2">
-            <div className="inline-block h-4 w-4 border-2 border-t-white border-r-white border-b-transparent border-l-transparent rounded-full animate-spin"></div>
-            <div>Generating...</div>
-          </div>
-        ) : (
-          <div className="flex font-semibold text-lg items-center gap-2">
-            <div>Generate</div>
-            <SentIcon className="text-white min-w-[25px] min-h-[25px] fill-white rotate-45" />
-          </div>
-        )}
-      </Button>
+      <div className="group relative rounded-2xl overflow-hidden gradient-border shadow-lg transition-all duration-300 hover:shadow-xl hover:shadow-primary/10">
+        {/* Animated background gradient effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-secondary/5 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        
+        {/* Input and button container */}
+        <div className="relative flex items-center bg-card/80 backdrop-blur-md">
+          <Input
+            type="text"
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            placeholder="Enter Additional Instructions..."
+            className="w-full h-[60px] px-6 text-foreground focus:outline-none text-base bg-transparent 
+              border-none shadow-none rounded-none placeholder:text-muted-foreground/70"
+            disabled={isPending}
+          />
+          
+          <Button
+            type="submit"
+            className={`h-[60px] px-6 rounded-r-xl group/button relative overflow-hidden flex items-center gap-3 ${
+              isPending
+              ? "bg-muted/50 text-muted-foreground cursor-not-allowed"
+              : "bg-gradient-to-r from-primary to-secondary hover:shadow-lg hover:shadow-primary/20 text-white"
+            }`}
+            disabled={isPending}
+          >
+            {/* Shimmer effect on hover */}
+            {!isPending && (
+              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 opacity-0 group-hover/button:opacity-100 transition-opacity duration-500 group-hover/button:animate-shimmer" style={{ backgroundSize: '200% 100%' }}></div>
+            )}
+            
+            {isPending ? (
+              <div className="flex items-center gap-3 relative z-10">
+                <div className="inline-block h-4 w-4 relative">
+                  <div className="absolute inset-0 rounded-full border-2 border-t-primary-foreground border-r-primary-foreground border-b-transparent border-l-transparent animate-spin"></div>
+                  <div className="absolute inset-1 rounded-full border-2 border-t-transparent border-r-transparent border-b-primary-foreground/70 border-l-primary-foreground/70 animate-spin animation-delay-150"></div>
+                </div>
+                <span className="font-medium">Generating...</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 font-medium relative z-10">
+                <SparklesIcon className="text-white w-5 h-5 group-hover/button:animate-pulse" />
+                <span className="text-sm md:text-base">Generate</span>
+                <SentIcon className="text-white w-5 h-5 fill-white rotate-45 group-hover/button:translate-x-1 group-hover/button:-translate-y-1 transition-transform duration-300" />
+              </div>
+            )}
+          </Button>
+        </div>
+      </div>
+      
+      {/* Subtle trailing effect at the bottom */}
+      <div className="h-1 w-full bg-gradient-to-r from-transparent via-primary/20 to-transparent rounded-b-full blur-sm"></div>
     </form>
   );
 };

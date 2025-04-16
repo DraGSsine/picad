@@ -33,58 +33,64 @@ const PricingCard: React.FC<PricingCardProps> = ({
 
   return (
     <div
-      className={`relative rounded-xl transition-all duration-500 hover:scale-105 ${
+      className={`relative rounded-3xl transition-all duration-500 hover:scale-105 overflow-hidden gradient-border ${
         isPopular
-          ? "bg-violet-600 text-white ring-2 ring-violet-500"
-          : "bg-white border border-zinc-100 hover:border-violet-200 hover:shadow-lg"
+          ? "bg-gradient-to-br from-primary/95 to-primary/80 text-primary-foreground shadow-lg shadow-primary/20"
+          : "bg-card hover:shadow-xl hover:shadow-primary/10 border-primary/10"
       }`}
     >
       {isPopular && (
         <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-          <span className="px-3 py-1 rounded-full bg-zinc-800 text-white text-xs font-medium shadow-lg">
+          <span className="px-4 py-1.5 rounded-full bg-secondary text-secondary-foreground text-xs font-medium shadow-lg">
             Most Popular
           </span>
         </div>
       )}
 
-      <div className="p-6">
+      {/* Decorative background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-10">
+        <div className="absolute -top-[40%] -right-[10%] w-[80%] h-[80%] rounded-full bg-primary blur-[60px]"></div>
+        <div className="absolute -bottom-[30%] -left-[10%] w-[60%] h-[60%] rounded-full bg-secondary blur-[80px]"></div>
+      </div>
+
+      <div className="p-8 relative z-10">
         <div className="mb-6">
           <div
-            className={`w-12 h-12 rounded-lg mb-4 flex items-center justify-center transform transition-transform duration-500 hover:rotate-12 ${
+            className={`w-16 h-16 rounded-2xl mb-6 flex items-center justify-center transform transition-transform duration-500 hover:rotate-12 ${
               isPopular
-                ? "bg-violet-500 text-white"
-                : "bg-violet-50 text-violet-500"
+                ? "bg-secondary text-secondary-foreground"
+                : "bg-gradient-to-br from-primary/10 to-secondary/10 text-primary"
             }`}
           >
             {icon}
           </div>
 
           <h3
-            className={`text-lg font-bold ${
-              isPopular ? "text-white" : "text-zinc-800"
+            className={`text-xl font-bold ${
+              isPopular ? "text-primary-foreground" : "text-foreground"
             }`}
           >
             {planName}
           </h3>
           <p
-            className={`mt-2 text-sm ${
-              isPopular ? "text-zinc-100" : "text-zinc-500"
+            className={`mt-3 text-sm leading-relaxed ${
+              isPopular ? "text-primary-foreground/80" : "text-muted-foreground"
             }`}
           >
             {description}
           </p>
 
-          <div className="mt-5 flex items-baseline">
+          <div className="mt-6 flex items-baseline">
             <span
               className={`text-4xl font-bold ${
-                isPopular ? "text-white" : "text-zinc-800"
+                isPopular ? "text-primary-foreground" : "text-foreground"
               }`}
             >
               ${price}
             </span>
             <span
               className={`ml-2 text-sm ${
-                isPopular ? "text-zinc-100" : "text-zinc-500"
+                isPopular ? "text-primary-foreground/80" : "text-muted-foreground"
               }`}
             >
               /month
@@ -92,23 +98,25 @@ const PricingCard: React.FC<PricingCardProps> = ({
           </div>
         </div>
 
-        <ul className="space-y-3 mb-6">
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-primary/20 to-transparent my-6"></div>
+
+        <ul className="space-y-4 mb-8">
           {features.map((feature, index) => (
             <li key={index} className="flex items-start gap-3">
               <div
-                className={`mt-1 rounded-full p-1 ${
-                  isPopular ? "bg-violet-500" : "bg-violet-50"
+                className={`mt-0.5 rounded-full p-1 ${
+                  isPopular ? "bg-secondary/80" : "bg-primary/10"
                 }`}
               >
                 <Check
                   className={`w-3 h-3 ${
-                    isPopular ? "text-white" : "text-violet-600"
+                    isPopular ? "text-secondary-foreground" : "text-primary"
                   }`}
                 />
               </div>
               <span
                 className={`text-sm leading-relaxed ${
-                  isPopular ? "text-zinc-100" : "text-zinc-600"
+                  isPopular ? "text-primary-foreground/90" : "text-foreground/80"
                 }`}
               >
                 {feature}
@@ -120,11 +128,11 @@ const PricingCard: React.FC<PricingCardProps> = ({
         <button
           onClick={onSelect}
           disabled={isLoading}
-          className={`w-full py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-[1.02] flex items-center justify-center ${
+          className={`w-full py-3.5 rounded-2xl font-medium transition-all duration-300 transform hover:scale-[1.02] flex items-center justify-center ${
             isPopular
-              ? "bg-white text-violet-600 hover:bg-zinc-50"
-              : "bg-violet-600 text-white hover:bg-violet-700"
-          } ${isLoading ? "opacity-75 cursor-not-allowed" : ""}`}
+              ? "bg-secondary text-secondary-foreground hover:shadow-lg hover:shadow-secondary/20"
+              : "bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:shadow-lg hover:shadow-primary/20"
+          } ${isLoading ? "opacity-80 cursor-not-allowed" : ""}`}
         >
           {isLoading && isSelected ? (
             <Loader2 className="w-5 h-5 animate-spin mr-2" />
@@ -166,15 +174,22 @@ const SubscriptionDialog = () => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-6 max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="text-center space-y-4 mb-12">
-          <h2 className="text-3xl font-bold text-zinc-800">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-300">
+      <div className="bg-background/95 rounded-3xl border border-primary/20 p-8 max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-2xl relative">
+        {/* Decorative background elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-[40%] -right-[10%] w-[80%] h-[80%] rounded-full bg-primary/5 blur-[100px] animate-float-slow"></div>
+          <div className="absolute -bottom-[30%] -left-[10%] w-[60%] h-[60%] rounded-full bg-secondary/5 blur-[120px] animate-float-reverse"></div>
+        </div>
+        
+        <div className="text-center space-y-4 mb-12 relative z-10">
+          <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
             Your subscription has expired
           </h2>
-          <p className="text-zinc-600">
+          <p className="text-muted-foreground text-lg">
             Select a plan to continue using all features
           </p>
+          <div className="h-1 w-24 bg-gradient-to-r from-primary to-secondary rounded-full mx-auto mt-6"></div>
         </div>
 
         <PricingSection
@@ -246,9 +261,9 @@ const PricingSection: React.FC<PricingSectionProps> = ({
   ];
 
   return (
-    <section className="py-8 px-4 bg-white" id="pricing">
+    <section className="py-8 px-4 relative z-10">
       <div className="max-w-6xl mx-auto">
-        <div className="grid lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <div className="grid lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
           {pricingData.map((plan, index) => (
             <PricingCard
               key={index}

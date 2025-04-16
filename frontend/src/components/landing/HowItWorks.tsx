@@ -1,0 +1,194 @@
+import React from "react";
+import Image from "next/image";
+import { ArrowRight, SparklesIcon } from "lucide-react";
+
+const HowItWorks = () => {
+  const steps = [
+    {
+      step: 1,
+      title: "Upload Your Product Photo",
+      description: "Simply drag & drop your product image and watch as our AI generates stunning ad variations instantly.",
+      icon: "/images/upload-icon.svg",
+      image: "/images/upload-product.webp",
+      bgColor: "from-primary to-primary/80",
+      textColor: "text-primary",
+      accentColor: "bg-primary/10", 
+      delay: 0.2,
+    },
+    {
+      step: 2,
+      title: "Add Text & Customize",
+      description: "Add your headlines and customize the layout. Our AI intelligently adapts the design to fit your text beautifully.",
+      icon: "/images/text-icon.svg",
+      image: "/images/add-text.webp", 
+      bgColor: "from-secondary to-secondary/80",
+      textColor: "text-secondary-foreground",
+      accentColor: "bg-secondary/20",
+      delay: 0.4,
+    },
+    {
+      step: 3,
+      title: "Fine-tune with AI Brush",
+      description: "Use our magic brush to remove objects or add new elements with simple text prompts—no design skills needed.",
+      icon: "/images/magic-icon.svg",
+      image: "/images/ai-brush.webp",
+      bgColor: "from-accent to-accent/80",
+      textColor: "text-accent-foreground",
+      accentColor: "bg-accent/20",
+      delay: 0.6,
+    },
+  ];
+
+  return (
+    <section id="how-it-works" className="py-24 md:py-32 relative overflow-hidden">
+      {/* Soft background with improved gradient elements similar to hero */}
+      <div className="absolute inset-0 bg-gradient-to-br from-secondary/20 via-white to-accent/20 z-0"></div>
+      
+      {/* Enhanced decorative elements with same color palette as hero */}
+      <div className="absolute top-[5%] right-[5%] w-[45rem] h-[45rem] bg-gradient-to-br from-primary/10 to-primary/5 rounded-full blur-3xl opacity-70 -z-10"></div>
+      <div className="absolute bottom-[10%] left-[5%] w-[35rem] h-[35rem] bg-gradient-to-tl from-accent/20 to-secondary/20 rounded-full blur-3xl opacity-60 -z-10"></div>
+
+      {/* Soft accent lines matching hero */}
+      <div className="absolute top-[15%] left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-secondary/40 to-transparent"></div>
+      <div className="absolute bottom-[15%] left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-secondary/40 to-transparent"></div>
+      
+      <div className="container mx-auto px-4 sm:px-6 relative z-10">
+        {/* Section header with hero-matching styling */}
+        <div className="text-center mb-20 max-w-3xl mx-auto">
+          <div className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-secondary/50 to-accent/50 text-foreground font-semibold text-sm rounded-full mb-6 animate-fade-in shadow-sm border border-secondary/30">
+            <SparklesIcon className="mr-2 h-4 w-4 text-primary" />
+            <span>Effortless Workflow</span>
+          </div>
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground animate-fade-in tracking-tight">
+            Create Professional Ads in <span className="relative">
+              <span className="relative z-10 bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+                3 Simple Steps
+              </span>
+              <span className="absolute bottom-1 left-0 w-full h-5 bg-gradient-to-r from-accent/60 to-accent/30 -z-0 rounded-sm transform -rotate-1"></span>
+            </span>
+          </h2>
+          <p className="text-lg md:text-xl text-foreground/90 max-w-2xl mx-auto leading-relaxed animate-fade-in">
+            Our intuitive AI-powered platform simplifies ad creation from upload to finished design—all in minutes, not hours.
+          </p>
+        </div>
+        
+        <div className="space-y-20 md:space-y-28">
+          {steps.map((step, index) => (
+            <div
+              key={step.step}
+              className={`grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 items-center ${
+                index % 2 === 1 ? "md:flex-row-reverse" : ""
+              }`}
+            >
+              {/* Text content with styling matching hero */}
+              <div className={`${index % 2 === 1 ? "md:order-2" : ""} animate-fade-in`} style={{ animationDelay: `${step.delay}s` }}>
+                <div className="flex items-center space-x-4 mb-6">
+                  <div className={`flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br ${step.bgColor} shadow-lg`}>
+                    <Image 
+                      src={step.icon} 
+                      alt={`Step ${step.step} icon`} 
+                      width={32} 
+                      height={32}
+                      className="w-8 h-8 text-white" 
+                    />
+                  </div>
+                  <div className={`text-4xl font-bold ${step.textColor} opacity-80`}>0{step.step}</div>
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold mb-4 text-foreground">{step.title}</h3>
+                <p className="text-lg text-foreground/90 mb-6 leading-relaxed">{step.description}</p>
+                
+                {/* Bullet points with hero-matching styling */}
+                <ul className="space-y-3">
+                  {index === 0 && (
+                    <>
+                      <li className="flex items-center text-foreground">
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-secondary/60 to-accent/40 flex items-center justify-center shadow-sm mr-3">
+                          <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-primary to-primary/80"></div>
+                        </div>
+                        <span className="text-foreground/90">Supports JPG, PNG & WEBP files</span>
+                      </li>
+                      <li className="flex items-center text-foreground">
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-secondary/60 to-accent/40 flex items-center justify-center shadow-sm mr-3">
+                          <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-primary to-primary/80"></div>
+                        </div>
+                        <span className="text-foreground/90">Multiple ad variations in seconds</span>
+                      </li>
+                    </>
+                  )}
+                  
+                  {index === 1 && (
+                    <>
+                      <li className="flex items-center text-foreground">
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-secondary/60 to-accent/40 flex items-center justify-center shadow-sm mr-3">
+                          <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-primary to-primary/80"></div>
+                        </div>
+                        <span className="text-foreground/90">Professionally designed text layouts</span>
+                      </li>
+                      <li className="flex items-center text-foreground">
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-secondary/60 to-accent/40 flex items-center justify-center shadow-sm mr-3">
+                          <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-primary to-primary/80"></div>
+                        </div>
+                        <span className="text-foreground/90">Customizable fonts & colors</span>
+                      </li>
+                    </>
+                  )}
+                  
+                  {index === 2 && (
+                    <>
+                      <li className="flex items-center text-foreground">
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-secondary/60 to-accent/40 flex items-center justify-center shadow-sm mr-3">
+                          <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-primary to-primary/80"></div>
+                        </div>
+                        <span className="text-foreground/90">Remove unwanted objects seamlessly</span>
+                      </li>
+                      <li className="flex items-center text-foreground">
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-secondary/60 to-accent/40 flex items-center justify-center shadow-sm mr-3">
+                          <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-primary to-primary/80"></div>
+                        </div>
+                        <span className="text-foreground/90">Add new elements with text prompts</span>
+                      </li>
+                    </>
+                  )}
+                </ul>
+              </div>
+              
+              {/* Image/Screen Mockup with styling matching hero */}
+              <div className={`${index % 2 === 1 ? "md:order-1" : ""} relative animate-fade-in`} style={{ animationDelay: `${step.delay + 0.2}s` }}>
+                <div className="relative rounded-xl overflow-hidden shadow-lg border border-border bg-card p-2">
+                  {/* Image container with clean styling matching hero */}
+                  <div className="aspect-video w-full relative rounded-lg overflow-hidden">
+                    {/* This would be replaced with actual images */}
+                    <div className={`w-full h-full bg-gradient-to-r ${step.bgColor} bg-opacity-10 flex items-center justify-center`}>
+                      <div className="text-center p-6">
+                        <div className={`mx-auto mb-4 w-16 h-16 rounded-full ${step.accentColor} flex items-center justify-center`}>
+                          <Image 
+                            src={step.icon}
+                            alt={step.title}
+                            width={32}
+                            height={32}
+                            className={`w-8 h-8 ${step.textColor}`}
+                          />
+                        </div>
+                        <h4 className={`text-xl font-bold mb-2 ${step.textColor}`}>Step {step.step}: {step.title}</h4>
+                        <p className="text-foreground/70 text-sm">
+                          Example preview of {step.title.toLowerCase()} process
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Decorative elements matching hero */}
+                <div className="absolute -z-10 -bottom-4 -right-4 w-24 h-24 rounded-full bg-gradient-to-br from-accent/30 via-secondary/20 to-primary/10"></div>
+                <div className="absolute -z-10 -top-4 -left-4 w-16 h-16 rounded-full bg-gradient-to-tl from-accent/20 via-secondary/15 to-primary/10"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+    </section>
+  );
+};
+
+export default HowItWorks;
