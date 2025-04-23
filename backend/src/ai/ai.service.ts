@@ -348,14 +348,14 @@ export class AiService {
     return axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
       {
-        model: 'google/gemini-2.5-pro-exp-03-25:free',
+        model:"google/gemini-2.0-flash-exp:free",
         messages: messages,
       },
       {
         headers: {
           Authorization: `Bearer ${this.openRouterApiKey}`,
           'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://yourdomain.com',
+          'HTTP-Referer': 'https://picad.pro',
           'X-Title': 'Ad Creator',
         },
       },

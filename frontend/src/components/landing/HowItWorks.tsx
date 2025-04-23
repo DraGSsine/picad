@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import { ArrowRight, SparklesIcon } from "lucide-react";
+import { SparklesIcon } from "lucide-react";
 
 const HowItWorks = () => {
   const steps = [
@@ -10,8 +10,6 @@ const HowItWorks = () => {
       description: "Simply drag & drop your product image and watch as our AI generates stunning ad variations instantly.",
       icon: "/images/upload-icon.svg",
       image: "/images/upload-product.webp",
-      bgColor: "from-primary to-primary/80",
-      textColor: "text-primary",
       accentColor: "bg-primary/10", 
       delay: 0.2,
     },
@@ -21,8 +19,6 @@ const HowItWorks = () => {
       description: "Add your headlines and customize the layout. Our AI intelligently adapts the design to fit your text beautifully.",
       icon: "/images/text-icon.svg",
       image: "/images/add-text.webp", 
-      bgColor: "from-secondary to-secondary/80",
-      textColor: "text-secondary-foreground",
       accentColor: "bg-secondary/20",
       delay: 0.4,
     },
@@ -32,8 +28,6 @@ const HowItWorks = () => {
       description: "Use our magic brush to remove objects or add new elements with simple text prompts—no design skills needed.",
       icon: "/images/magic-icon.svg",
       image: "/images/ai-brush.webp",
-      bgColor: "from-accent to-accent/80",
-      textColor: "text-accent-foreground",
       accentColor: "bg-accent/20",
       delay: 0.6,
     },
@@ -41,21 +35,10 @@ const HowItWorks = () => {
 
   return (
     <section id="how-it-works" className="py-24 md:py-32 relative overflow-hidden">
-      {/* Soft background with improved gradient elements similar to hero */}
-      <div className="absolute inset-0 bg-gradient-to-br from-secondary/20 via-white to-accent/20 z-0"></div>
-      
-      {/* Enhanced decorative elements with same color palette as hero */}
-      <div className="absolute top-[5%] right-[5%] w-[45rem] h-[45rem] bg-gradient-to-br from-primary/10 to-primary/5 rounded-full blur-3xl opacity-70 -z-10"></div>
-      <div className="absolute bottom-[10%] left-[5%] w-[35rem] h-[35rem] bg-gradient-to-tl from-accent/20 to-secondary/20 rounded-full blur-3xl opacity-60 -z-10"></div>
-
-      {/* Soft accent lines matching hero */}
-      <div className="absolute top-[15%] left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-secondary/40 to-transparent"></div>
-      <div className="absolute bottom-[15%] left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-secondary/40 to-transparent"></div>
-      
-      <div className="container mx-auto px-4 sm:px-6 relative z-10">
-        {/* Section header with hero-matching styling */}
+      <div className="container mx-auto px-6 relative z-10">
+        {/* Section header with styling matching hero */}
         <div className="text-center mb-20 max-w-3xl mx-auto">
-          <div className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-secondary/50 to-accent/50 text-foreground font-semibold text-sm rounded-full mb-6 animate-fade-in shadow-sm border border-secondary/30">
+          <div className="inline-flex items-center px-5 py-2 bg-white/80 text-foreground font-semibold text-sm rounded-full mb-6 animate-fade-in shadow-sm border border-secondary/30">
             <SparklesIcon className="mr-2 h-4 w-4 text-primary" />
             <span>Effortless Workflow</span>
           </div>
@@ -72,7 +55,7 @@ const HowItWorks = () => {
           </p>
         </div>
         
-        <div className="space-y-20 md:space-y-28">
+        <div className="space-y-24 md:space-y-28">
           {steps.map((step, index) => (
             <div
               key={step.step}
@@ -83,7 +66,7 @@ const HowItWorks = () => {
               {/* Text content with styling matching hero */}
               <div className={`${index % 2 === 1 ? "md:order-2" : ""} animate-fade-in`} style={{ animationDelay: `${step.delay}s` }}>
                 <div className="flex items-center space-x-4 mb-6">
-                  <div className={`flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br ${step.bgColor} shadow-lg`}>
+                  <div className="flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br from-primary/80 to-primary/60 shadow-lg">
                     <Image 
                       src={step.icon} 
                       alt={`Step ${step.step} icon`} 
@@ -92,7 +75,7 @@ const HowItWorks = () => {
                       className="w-8 h-8 text-white" 
                     />
                   </div>
-                  <div className={`text-4xl font-bold ${step.textColor} opacity-80`}>0{step.step}</div>
+                  <div className="text-4xl font-bold text-primary opacity-80">0{step.step}</div>
                 </div>
                 <h3 className="text-2xl md:text-3xl font-bold mb-4 text-foreground">{step.title}</h3>
                 <p className="text-lg text-foreground/90 mb-6 leading-relaxed">{step.description}</p>
@@ -154,11 +137,11 @@ const HowItWorks = () => {
               
               {/* Image/Screen Mockup with styling matching hero */}
               <div className={`${index % 2 === 1 ? "md:order-1" : ""} relative animate-fade-in`} style={{ animationDelay: `${step.delay + 0.2}s` }}>
-                <div className="relative rounded-xl overflow-hidden shadow-lg border border-border bg-card p-2">
+                <div className="relative rounded-xl overflow-hidden shadow-lg border border-secondary/30 bg-white/80 backdrop-blur-sm p-2">
                   {/* Image container with clean styling matching hero */}
                   <div className="aspect-video w-full relative rounded-lg overflow-hidden">
                     {/* This would be replaced with actual images */}
-                    <div className={`w-full h-full bg-gradient-to-r ${step.bgColor} bg-opacity-10 flex items-center justify-center`}>
+                    <div className="w-full h-full bg-white/50 backdrop-blur-sm flex items-center justify-center">
                       <div className="text-center p-6">
                         <div className={`mx-auto mb-4 w-16 h-16 rounded-full ${step.accentColor} flex items-center justify-center`}>
                           <Image 
@@ -166,10 +149,10 @@ const HowItWorks = () => {
                             alt={step.title}
                             width={32}
                             height={32}
-                            className={`w-8 h-8 ${step.textColor}`}
+                            className="w-8 h-8 text-primary"
                           />
                         </div>
-                        <h4 className={`text-xl font-bold mb-2 ${step.textColor}`}>Step {step.step}: {step.title}</h4>
+                        <h4 className="text-xl font-bold mb-2 text-primary">Step {step.step}: {step.title}</h4>
                         <p className="text-foreground/70 text-sm">
                           Example preview of {step.title.toLowerCase()} process
                         </p>
@@ -186,7 +169,6 @@ const HowItWorks = () => {
           ))}
         </div>
       </div>
-
     </section>
   );
 };

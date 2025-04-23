@@ -17,10 +17,34 @@ export default {
         shimmer: {
           "100%": { transform: "translateX(100%)" },
         },
+        float: {
+          "0%": { transform: "translate(0px, 0px) rotate(0deg)" },
+          "50%": { transform: "translate(-15px, 15px) rotate(-2deg)" },
+          "100%": { transform: "translate(0px, 0px) rotate(0deg)" },
+        },
+        "float-slow": {
+          "0%": { transform: "translate(0px, 0px) rotate(0deg)" },
+          "50%": { transform: "translate(20px, 20px) rotate(3deg)" },
+          "100%": { transform: "translate(0px, 0px) rotate(0deg)" },
+        },
+        "float-medium": {
+          "0%": { transform: "translate(0px, 0px) rotate(0deg)" },
+          "50%": { transform: "translate(-20px, 10px) rotate(-1deg)" },
+          "100%": { transform: "translate(0px, 0px) rotate(0deg)" },
+        },
+        "float-fast": {
+          "0%": { transform: "translate(0px, 0px) rotate(0deg)" },
+          "50%": { transform: "translate(15px, -15px) rotate(2deg)" },
+          "100%": { transform: "translate(0px, 0px) rotate(0deg)" },
+        },
       },
       animation: {
         gradient: "gradient 4s linear infinite",
         shimmer: "shimmer 2s infinite",
+        float: "float 8s ease-in-out infinite",
+        "float-slow": "float-slow 12s ease-in-out infinite",
+        "float-medium": "float-medium 10s ease-in-out infinite",
+        "float-fast": "float-fast 6s ease-in-out infinite",
       },
       colors: {
         background: "hsl(var(--background))",

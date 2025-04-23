@@ -180,6 +180,26 @@ body {
   50% { opacity: 1; background: radial-gradient(circle, hsla(var(--primary), 0.2) 0%, transparent 60%); }
 }
 
+/* New animations for AdPreview component */
+@keyframes ping {
+  75%, 100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+@keyframes pulse {
+  50% {
+    opacity: .5;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .animate-float-slow {
   animation: float-slow 8s ease-in-out infinite;
 }
@@ -204,11 +224,46 @@ body {
   animation: radial-pulse 8s ease-in-out infinite;
 }
 
+/* New utility classes for AdPreview component */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.rotate3d-1 {
+  transform: rotateY(-5deg);
+  transition: transform 0.5s ease;
+}
+
+.rotate3d-1:hover {
+  transform: rotateY(-2deg) translateZ(10px);
+}
+
+.rotate3d-2 {
+  transform: rotateY(5deg);
+  transition: transform 0.5s ease;
+}
+
+.rotate3d-2:hover {
+  transform: rotateY(2deg) translateZ(10px);
+}
+
+.animate-ping-slow {
+  animation: ping 3s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-spin-slow {
+  animation: spin 3s linear infinite;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
   width: 7px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
+custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
 

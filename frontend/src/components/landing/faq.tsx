@@ -39,22 +39,11 @@ const FAQ = () => {
   };
 
   return (
-    <section className="py-24 md:py-32 relative overflow-hidden">
-      {/* Soft background with improved gradient elements similar to hero */}
-      <div className="absolute inset-0 bg-gradient-to-br from-secondary/20 via-white to-accent/20 z-0"></div>
-      
-      {/* Enhanced decorative elements with same color palette as hero */}
-      <div className="absolute top-[5%] right-[5%] w-[45rem] h-[45rem] bg-gradient-to-br from-primary/10 to-primary/5 rounded-full blur-3xl opacity-70 -z-10"></div>
-      <div className="absolute bottom-[10%] left-[5%] w-[35rem] h-[35rem] bg-gradient-to-tl from-accent/20 to-secondary/20 rounded-full blur-3xl opacity-60 -z-10"></div>
-
-      {/* Soft accent lines matching hero */}
-      <div className="absolute top-[15%] left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-secondary/40 to-transparent"></div>
-      <div className="absolute bottom-[15%] left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-secondary/40 to-transparent"></div>
-      
+    <section id="faq" className="py-24 md:py-32 relative overflow-hidden">
       <div className="container mx-auto px-6 relative z-10">
-        {/* Section header with hero-matching styling */}
-        <div className="text-center mb-20 max-w-3xl mx-auto">
-          <div className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-secondary/50 to-accent/50 text-foreground font-semibold text-sm rounded-full mb-6 animate-fade-in shadow-sm border border-secondary/30">
+        {/* Section header with styling matching other components */}
+        <div className="text-center mb-16 max-w-3xl mx-auto">
+          <div className="inline-flex items-center px-5 py-2 bg-white/80 text-foreground font-semibold text-sm rounded-full mb-6 animate-fade-in shadow-sm border border-secondary/30">
             <SparklesIcon className="mr-2 h-4 w-4 text-primary" />
             <span>Questions & Answers</span>
           </div>
@@ -71,12 +60,13 @@ const FAQ = () => {
           </p>
         </div>
         
-        {/* FAQ accordions with styling matching hero components */}
+        {/* FAQ accordions with styling matching other components */}
         <div className="max-w-3xl mx-auto">
           {faqData.map((faq, index) => (
             <div 
               key={index} 
-              className={`mb-5 overflow-hidden rounded-2xl border ${activeIndex === index ? "border-primary/30 shadow-lg" : "border-secondary/20"} transition-all duration-300 bg-card/80 backdrop-blur-sm`}
+              className={`mb-5 overflow-hidden rounded-2xl border ${activeIndex === index ? "border-primary/30 shadow-lg" : "border-secondary/20"} transition-all duration-300 bg-white/90 backdrop-blur-sm animate-fade-in`}
+              style={{ animationDelay: `${0.1 + (index * 0.05)}s` }}
             >
               <button
                 onClick={() => toggleAccordion(index)}
@@ -94,7 +84,7 @@ const FAQ = () => {
                   activeIndex === index ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
                 }`}
               >
-                <div className="p-6 pt-0 text-foreground/80">
+                <div className="p-6 pt-0 text-foreground/80 leading-relaxed">
                   {faq.answer}
                 </div>
               </div>
@@ -102,8 +92,8 @@ const FAQ = () => {
           ))}
         </div>
         
-        {/* Additional support section with gradient button */}
-        <div className="mt-16 text-center">
+        {/* Additional support section with gradient button matching the same style */}
+        <div className="mt-16 text-center animate-fade-in" style={{ animationDelay: "0.5s" }}>
           <p className="text-foreground/90 mb-6">
             Don't see your question? We're here to help!
           </p>
@@ -114,7 +104,6 @@ const FAQ = () => {
           </Button>
         </div>
       </div>
-
     </section>
   );
 };

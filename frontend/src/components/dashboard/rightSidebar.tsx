@@ -74,17 +74,14 @@ const RightSidebar: React.FC = () => {
     // Find the history item that matches this URL to get its aspect ratio
     const historyItem = history.find(item => item.imageUrl === imageUrl);
     
-    // First update the aspect ratio if available in history
+    // Set the current image
+    setCurrentImage(imageUrl);
+    
+    // Update the aspect ratio if available in history
     if (historyItem?.aspectRatio) {
       console.log(`Updating aspect ratio to ${historyItem.aspectRatio} from history item`);
       setCurrentAspectRatio(historyItem.aspectRatio);
     }
-    
-    // Set the current image after aspect ratio has been updated
-    // This ensures proper canvas dimensions when the image loads
-    setTimeout(() => {
-      setCurrentImage(imageUrl);
-    }, 0);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

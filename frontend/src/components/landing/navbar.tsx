@@ -13,14 +13,14 @@ const NavigationBar = () => {
     <div className="fixed top-0 left-0 right-0 z-50">
       <div className="container mx-auto px-4 pt-6">
         <nav
-          className="rounded-full px-6 md:px-8 py-3 bg-white/90 backdrop-blur-md shadow-md border border-slate-200/60 dark:bg-slate-900/80 dark:border-slate-800/60"
+          className="rounded-full px-6 md:px-8 py-2 bg-white/90 backdrop-blur-md shadow-md border border-slate-200/60 dark:bg-slate-900/80 dark:border-slate-800/60"
         >
           <div className="flex items-center justify-between">
             {/* Logo with elegant hover effect */}
             <div className="relative group">
               <div className="absolute -inset-2 bg-primary/10 dark:bg-primary/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
               <div className="relative">
-                <Logo size={60} animated colorScheme="modern" />
+                <Logo size={40} animated colorScheme="modern" />
               </div>
             </div>
 
@@ -50,7 +50,7 @@ const NavigationBar = () => {
                 <Link
                   href="/auth/signin"
                   className={cn(
-                    "rounded-full px-6 py-3 transition-all duration-300 border border-slate-200 dark:border-slate-800",
+                    "rounded-full px-6 py-2 transition-all duration-300 border border-slate-200 dark:border-slate-800",
                     "hover:bg-slate-100 dark:hover:bg-slate-800/70 text-foreground shadow-sm hover:shadow"
                   )}
                 >
@@ -58,7 +58,7 @@ const NavigationBar = () => {
                 </Link>
                 <Link
                   href="/auth/signup"
-                  className="bg-primary flex justify-between items-center py-3 hover:bg-primary/90 text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-all duration-300 px-6 border border-primary/10"
+                  className="bg-primary flex justify-between items-center py-2 hover:bg-primary/90 text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-all duration-300 px-4 border border-primary/10"
                 >
                   <span>Get Started</span>
                   <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
@@ -91,7 +91,7 @@ const NavigationBar = () => {
               <div className="flex flex-col space-y-4">
                 <Link
                   href="#features"
-                  className="text-foreground py-3 px-4 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/70 font-medium text-sm flex items-center justify-between group"
+                  className="text-foreground py-2 px-4 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/70 font-medium text-sm flex items-center justify-between group"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <span>Features</span>
@@ -99,7 +99,7 @@ const NavigationBar = () => {
                 </Link>
                 <Link
                   href="#pricing"
-                  className="text-foreground py-3 px-4 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/70 font-medium text-sm flex items-center justify-between group"
+                  className="text-foreground py-2 px-4 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/70 font-medium text-sm flex items-center justify-between group"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <span>Pricing</span>
