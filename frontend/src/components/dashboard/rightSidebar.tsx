@@ -4,13 +4,6 @@ import { Button } from "@/components/ui/button";
 import { useDashboard } from "@/contexts/DashboardContext";
 
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-} from "@/components/ui/dropdown-menu";
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -35,7 +28,6 @@ const RightSidebar: React.FC = () => {
   } = useDashboard();
 
   const [exportFormat, setExportFormat] = useState<'png' | 'jpeg' | 'webp'>('png');
-  const [exportQuality, setExportQuality] = useState<'high' | 'medium' | 'low'>('high');
 
   // Load history from localStorage on component mount
   useEffect(() => {

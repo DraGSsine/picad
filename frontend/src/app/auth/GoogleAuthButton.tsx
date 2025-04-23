@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useCallback, useState } from "react";
 
-const GoogleAuthButton = ({ isPending = false }) => {
+const GoogleAuthButton = () => {
   const [isLoading, setIsLoading] = useState(false);
   const handleGoogleAuth = useCallback(() => {
     setIsLoading(true);

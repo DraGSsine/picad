@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { api } from '@/lib/axios';
 import { useUserInfo } from '@/lib/queries';
 import Logo from '../logo';
-import { ArrowLeft01Icon, Bug01Icon, CreditCardIcon, Infinity01Icon, SparklesIcon } from 'hugeicons-react';
+import { ArrowLeft01Icon, Bug01Icon, CreditCardIcon, Infinity01Icon } from 'hugeicons-react';
 
 const NavBar = () => {
   const { data, isLoading } = useUserInfo();

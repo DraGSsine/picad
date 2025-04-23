@@ -102,7 +102,7 @@ const ImageCanvas: React.FC = () => {
         const img = new window.Image();
         img.crossOrigin = 'anonymous';
         img.onload = () => resolve(img);
-        img.onerror = (e) => reject(new Error('Image load error'));
+        img.onerror = () => reject(new Error('Image load error'));
         img.src = imageUrl;
       });
 
@@ -137,7 +137,7 @@ const ImageCanvas: React.FC = () => {
 
     fabricCanvasRef.current = canvas;
 
-    const resizeObserver = new ResizeObserver(entries => {
+    const resizeObserver = new ResizeObserver(() => {
       const newDimensions = calculateCanvasDimensions();
       setCanvasDimensions(newDimensions);
     });

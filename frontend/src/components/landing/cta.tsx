@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "../ui/button";
-import { SparklesIcon, RocketIcon } from "lucide-react";
+import { SparklesIcon } from "lucide-react";
 import Link from "next/link";
 
 const CTA = () => {

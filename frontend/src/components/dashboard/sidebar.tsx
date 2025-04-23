@@ -12,7 +12,6 @@ import {
   RefreshIcon,
   Cancel01Icon,
   Delete02Icon,
-  PaintBoardIcon,
 } from "hugeicons-react";
 import TemplateModal from "./templateModal";
 import { Button } from "@/components/ui/button";
@@ -39,6 +38,14 @@ interface adCreatorData {
   };
 }
 
+// Template interface matching the one in templateModal.tsx
+interface Template {
+  id: number;
+  name: string;
+  category: string;
+  imageUrl: string;
+}
+
 const LOCAL_STORAGE_KEY = "adCreatorData";
 
 const Sidebar = () => {
@@ -46,13 +53,12 @@ const Sidebar = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
 
   // Data state - simplified
   const [uploadedImages, setUploadedImages] = useState<string[]>([]); // Just the base64 strings
   const [selectedTemplateUrl, setSelectedTemplateUrl] = useState<string[]>([]); // Initialize as empty array
-  const [activeTemplate, setActiveTemplate] = useState<any>(null); // Template object from API
-  const [templates, setTemplates] = useState<any[]>([]);
+  const [activeTemplate, setActiveTemplate] = useState<Template | null>(null); // Template object from API
+  const [templates, setTemplates] = useState<Template[]>([]);
   const [loadingTemplates, setLoadingTemplates] = useState(false);
 
   // Settings state
@@ -133,7 +139,7 @@ const Sidebar = () => {
   ]);
 
   // When a template is selected, store its URL in the array
-  const handleTemplateSelection = (template: any) => {
+  const handleTemplateSelection = (template: Template) => {
     setActiveTemplate(template);
     // Set the first element of the array to the selected template URL
     setSelectedTemplateUrl([template.imageUrl]);
@@ -253,7 +259,7 @@ const Sidebar = () => {
       setSelectedTemplateUrl([base64]);
 
       // Also create a temp object for UI display
-      const customTemplate = {
+      const customTemplate: Template = {
         id: Date.now(),
         name: file.name.split(".")[0] || "Custom Template",
         category: "custom",
@@ -289,13 +295,6 @@ const Sidebar = () => {
   ];
 
   const displayedTemplates = templates.slice(0, 3);
-
-  const filteredTemplates = templates.filter(
-    (template) =>
-      (selectedCategory === "all" || template.category === selectedCategory) &&
-      (searchQuery === "" ||
-        template.name.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
 
   const renderSidebarExpandedContent = () => (
     <div className="flex-1 custom-scrollbar rounded-3xl bg-background/80">

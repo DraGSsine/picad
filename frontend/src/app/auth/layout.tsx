@@ -1,5 +1,4 @@
 import React, { ReactNode } from "react";
-import { Metadata } from "next";
 import Logo from "@/components/logo";
 
 const AuthLayout = ({ children }: { children: ReactNode }) => {

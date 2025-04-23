@@ -42,7 +42,7 @@ const Hero = () => {
             className="text-lg md:text-xl lg:w-[90%] xl:w-[75%] text-foreground/90 mb-10 animate-fade-in leading-relaxed"
             style={{ animationDelay: "0.2s" }}
           >
-            Experience Picad's elegant AI technology to transform ordinary
+            Experience Picad&lsquo;s elegant AI technology to transform ordinary
             product photos into stunning advertising masterpieces. Effortlessly
             add refined text, remove imperfections, or generate creative elements
             with our sophisticated brush tool.

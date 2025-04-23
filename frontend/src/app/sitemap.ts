@@ -1,32 +1,20 @@
 import type { MetadataRoute } from 'next'
 
-const BASE_URL = 'https://scrive.pro'
+const BASE_URL = 'https://picad.pro'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
     {
       url: BASE_URL,
       lastModified: new Date(),
-      changeFrequency: 'monthly',
+      changeFrequency: 'weekly',
       priority: 1,
     },
     {
-      url: BASE_URL,
+      url: `${BASE_URL}/dashboard`,
       lastModified: new Date(),
-      changeFrequency: 'monthly',
+      changeFrequency: 'weekly',
       priority: 0.9,
-    },
-    {
-      url: BASE_URL,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: BASE_URL,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
     },
     {
       url: `${BASE_URL}/auth/signin`,

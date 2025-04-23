@@ -95,7 +95,7 @@ const FAQ = () => {
         {/* Additional support section with gradient button matching the same style */}
         <div className="mt-16 text-center animate-fade-in" style={{ animationDelay: "0.5s" }}>
           <p className="text-foreground/90 mb-6">
-            Don't see your question? We're here to help!
+            Don&lsquo;t see your question? We&lsquo;re here to help!
           </p>
           <Button
             className="bg-gradient-to-r from-primary via-primary/90 to-primary text-primary-foreground hover:from-primary/90 hover:to-primary/80 font-semibold px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105 border border-primary/10"
