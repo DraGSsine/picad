@@ -33,8 +33,7 @@ interface adCreatorData {
   settings: {
     creativityLevel: number;
     detailLevel: number;
-    targetPlatform: string;
-    aspectRatio: string;
+    imageSize: string;
   };
 }
 
@@ -64,8 +63,7 @@ const Sidebar = () => {
   // Settings state
   const [creativityLevel, setCreativityLevel] = useState(50);
   const [detailLevel, setDetailLevel] = useState(50);
-  const [targetPlatform, setTargetPlatform] = useState("Instagram");
-  const [aspectRatio, setAspectRatio] = useState("9:16");
+  const [imageSize, setImageSize] = useState("1024x1024"); // Default to square image
   const [selectedCategory, setSelectedCategory] = useState("all");
 
   // Save simplified data to localStorage
@@ -78,8 +76,7 @@ const Sidebar = () => {
       settings: {
         creativityLevel,
         detailLevel,
-        targetPlatform,
-        aspectRatio,
+        imageSize,
       },
     };
 
@@ -88,15 +85,7 @@ const Sidebar = () => {
     } catch (error) {
       console.error("Error saving app data to localStorage:", error);
     }
-  }, [
-    isMounted,
-    uploadedImages,
-    selectedTemplateUrl,
-    creativityLevel,
-    detailLevel,
-    targetPlatform,
-    aspectRatio,
-  ]);
+  }, [isMounted, uploadedImages, selectedTemplateUrl, creativityLevel, detailLevel, imageSize]);
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -116,8 +105,7 @@ const Sidebar = () => {
           const settings = parsedData.settings || {};
           setCreativityLevel(settings.creativityLevel || 50);
           setDetailLevel(settings.detailLevel || 50);
-          setTargetPlatform(settings.targetPlatform || "Instagram");
-          setAspectRatio(settings.aspectRatio || "9:16");
+          setImageSize(settings.imageSize || "1024x1024");
         }
       } catch (error) {
         console.error("Error loading app data from localStorage:", error);
@@ -128,15 +116,7 @@ const Sidebar = () => {
   // Save data whenever it changes
   useEffect(() => {
     saveAppData();
-  }, [
-    uploadedImages,
-    selectedTemplateUrl,
-    creativityLevel,
-    detailLevel,
-    targetPlatform,
-    aspectRatio,
-    saveAppData,
-  ]);
+  }, [uploadedImages, selectedTemplateUrl, creativityLevel, detailLevel, imageSize, saveAppData]);
 
   // When a template is selected, store its URL in the array
   const handleTemplateSelection = (template: Template) => {
@@ -148,14 +128,8 @@ const Sidebar = () => {
   // When we have a selectedTemplateUrl but no activeTemplate,
   // find matching template (after template load)
   useEffect(() => {
-    if (
-      selectedTemplateUrl.length > 0 &&
-      !activeTemplate &&
-      templates.length > 0
-    ) {
-      const matchingTemplate = templates.find(
-        (t) => t.imageUrl === selectedTemplateUrl[0]
-      );
+    if (selectedTemplateUrl.length > 0 && !activeTemplate && templates.length > 0) {
+      const matchingTemplate = templates.find((t) => t.imageUrl === selectedTemplateUrl[0]);
       if (matchingTemplate) {
         setActiveTemplate(matchingTemplate);
       }
@@ -185,9 +159,7 @@ const Sidebar = () => {
 
       setLoadingTemplates(true);
       try {
-        const response = await api.get(
-          `/users/templates?categorie=${selectedCategory}`
-        );
+        const response = await api.get(`/users/templates?categorie=${selectedCategory}`);
         if (response.data) {
           setTemplates(response.data);
         }
@@ -205,14 +177,11 @@ const Sidebar = () => {
   const resetSettings = () => {
     setCreativityLevel(50);
     setDetailLevel(50);
-    setTargetPlatform("Instagram");
-    setAspectRatio("9:16");
+    setImageSize("1024x1024");
   };
 
   // Handle product image upload - storing just the base64
-  const handleProductImageUpload = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleProductImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files || event.target.files.length === 0) return;
 
     const newFiles = Array.from(event.target.files);
@@ -244,9 +213,7 @@ const Sidebar = () => {
   };
 
   // Handle custom template upload - store just the base64
-  const handleCustomTemplateUpload = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleCustomTemplateUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files || event.target.files.length === 0) return;
 
     const file = event.target.files[0];
@@ -275,9 +242,7 @@ const Sidebar = () => {
 
   // Remove an image by index
   const removeUploadedImage = (indexToRemove: number) => {
-    setUploadedImages((prev) =>
-      prev.filter((_, index) => index !== indexToRemove)
-    );
+    setUploadedImages((prev) => prev.filter((_, index) => index !== indexToRemove));
   };
 
   const categories = [
@@ -530,53 +495,25 @@ const Sidebar = () => {
           </div>
           <Card className="border-[1.5px] border-primary/20 shadow-md rounded-3xl overflow-hidden bg-card/40 backdrop-blur-sm hover:border-primary/30 transition-all duration-300">
             <div className="space-y-6 p-6 bg-background/60">
-              {/* Target Platform */}
-              <div>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="h-3 w-3 rounded-full bg-primary"></div>
-                  <label className="text-xs font-medium text-foreground">
-                    Target Platform
-                  </label>
-                </div>
-                <div className="grid grid-cols-4 gap-2 pl-6">
-                  {["Instagram", "Facebook", "TikTok", "General"].map(
-                    (platform) => (
-                      <Button
-                        key={platform}
-                        variant="outline"
-                        size="sm"
-                        className="py-1 h-auto text-xs border-primary/30 hover:bg-primary/10 hover:text-primary hover:border-primary/50 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary"
-                        data-state={
-                          platform === targetPlatform ? "active" : "inactive"
-                        }
-                        onClick={() => setTargetPlatform(platform)}
-                      >
-                        {platform}
-                      </Button>
-                    )
-                  )}
-                </div>
-              </div>
-
-              {/* Aspect Ratio Selector */}
+              {/* Image Size Selector */}
               <div>
                 <div className="flex items-center gap-3 mb-3">
                   <div className="h-3 w-3 rounded-full bg-secondary"></div>
                   <label className="text-xs font-medium text-foreground">
-                    Aspect Ratio
+                    Image Size
                   </label>
                 </div>
                 <div className="grid grid-cols-3 gap-2 pl-6">
-                  {["3:2", "1:1", "2:3"].map((ratio) => (
+                  {["1024x1024", "1536x1024", "1024x1536"].map((size) => (
                     <Button
-                      key={ratio}
+                      key={size}
                       variant="outline"
                       size="sm"
                       className="py-1 h-auto text-xs border-primary/30 hover:bg-primary/10 hover:text-primary hover:border-primary/50 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary"
-                      data-state={ratio === aspectRatio ? "active" : "inactive"}
-                      onClick={() => setAspectRatio(ratio)}
+                      data-state={size === imageSize ? "active" : "inactive"}
+                      onClick={() => setImageSize(size)}
                     >
-                      {ratio}
+                      {size}
                     </Button>
                   ))}
                 </div>

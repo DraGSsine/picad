@@ -14,9 +14,9 @@ interface DashboardContextType {
   canvasRef: React.MutableRefObject<HTMLCanvasElement | null> | null;
   setCanvasRef: (ref: React.MutableRefObject<HTMLCanvasElement | null>) => void;
   
-  // Aspect ratio
-  currentAspectRatio: string;
-  setCurrentAspectRatio: (aspectRatio: string) => void;
+  // Image size (replacing aspect ratio)
+  currentImageSize: string;
+  setCurrentImageSize: (imageSize: string) => void;
   
   // Edit mode
   editMode: "none" | "draw" | "text";
@@ -56,7 +56,7 @@ export const useDashboard = () => {
 export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [currentImage, setCurrentImage] = useState<string | null>(null);
   const [canvasRef, setCanvasRef] = useState<React.MutableRefObject<HTMLCanvasElement | null> | null>(null);
-  const [currentAspectRatio, setCurrentAspectRatio] = useState<string>("3:2"); // Default to one of the supported ratios
+  const [currentImageSize, setCurrentImageSize] = useState<string>("1024x1024"); // Default to a square image
   const [prompt, setPrompt] = useState("");
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [editMode, setEditMode] = useState<"none" | "draw" | "text">("none");
@@ -96,12 +96,12 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
           // Set the current image
           setCurrentImage(imageUrl);
           
-          // Update aspect ratio if provided by the API
-          if (data.aspectRatio) {
-            setCurrentAspectRatio(data.aspectRatio);
+          // Update image size if provided by the API
+          if (data.imageSize) {
+            setCurrentImageSize(data.imageSize);
           }
 
-          // Add to history with aspect ratio
+          // Add to history with image size
           setHistory((prev) => {
             const newHistory = [
               ...prev,
@@ -110,7 +110,7 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
                 imageUrl: imageUrl,
                 prompt,
                 timestamp: new Date(),
-                aspectRatio: data.aspectRatio || currentAspectRatio,
+                imageSize: data.imageSize || currentImageSize,
               },
             ];
             
@@ -174,12 +174,12 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
           // Set the current image
           setCurrentImage(imageUrl);
           
-          // Update aspect ratio if provided by the API
-          if (data.aspectRatio) {
-            setCurrentAspectRatio(data.aspectRatio);
+          // Update image size if provided by the API
+          if (data.imageSize) {
+            setCurrentImageSize(data.imageSize);
           }
 
-          // Add to history with aspect ratio
+          // Add to history with image size
           setHistory((prev) => {
             const newHistory = [
               ...prev,
@@ -188,7 +188,7 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
                 imageUrl: imageUrl,
                 prompt,
                 timestamp: new Date(),
-                aspectRatio: data.aspectRatio || currentAspectRatio,
+                imageSize: data.imageSize || currentImageSize,
               },
             ];
             
@@ -248,8 +248,8 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
     setCurrentImage,
     canvasRef,
     setCanvasRef,
-    currentAspectRatio,
-    setCurrentAspectRatio,
+    currentImageSize,
+    setCurrentImageSize,
     editMode,
     setEditMode,
     prompt,

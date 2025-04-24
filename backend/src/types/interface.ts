@@ -12,7 +12,6 @@ export interface IadCreatorData {
   settings?: {
     creativityLevel?: number;
     detailLevel?: number;
-    targetPlatform?: string;
-    aspectRatio?: string;
+    imageSize?: string;
   };
 }

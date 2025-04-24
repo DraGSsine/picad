@@ -14,7 +14,7 @@ const productShowcases = [
   },
   {
     beforeImage: "/showcase/product-2-before.jpeg",
-    afterImage: "/showcase/product-2-after.webp"
+    afterImage: "/showcase/product-2-after.webpasp"
   },
   {
     beforeImage: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=800&auto=format&fit=crop&q=80",

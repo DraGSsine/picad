@@ -4,5 +4,5 @@ export interface HistoryItem {
   prompt: string;
   timestamp: Date;
   step?: string;
-  aspectRatio?: string; // Add support for storing the aspect ratio
+  imageSize?: string; // Updated to store the image size instead of aspect ratio
 }

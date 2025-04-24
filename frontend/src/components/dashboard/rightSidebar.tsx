@@ -24,7 +24,7 @@ const RightSidebar: React.FC = () => {
     setHistory,
     setCurrentImage,
     currentImage,
-    setCurrentAspectRatio
+    setCurrentImageSize
   } = useDashboard();
 
   const [exportFormat, setExportFormat] = useState<'png' | 'jpeg' | 'webp'>('png');
@@ -63,16 +63,16 @@ const RightSidebar: React.FC = () => {
 
   // Function to handle image selection
   const handleSelectImage = (imageUrl: string) => {
-    // Find the history item that matches this URL to get its aspect ratio
-    const historyItem = history.find(item => item.imageUrl === imageUrl);
+    // Find the history item that matches this URL to get its image size
+    const historyItem:any = history.find(item => item.imageUrl === imageUrl);
     
     // Set the current image
     setCurrentImage(imageUrl);
     
-    // Update the aspect ratio if available in history
-    if (historyItem?.aspectRatio) {
-      console.log(`Updating aspect ratio to ${historyItem.aspectRatio} from history item`);
-      setCurrentAspectRatio(historyItem.aspectRatio);
+    // Update the image size if available in history
+    if (historyItem?.imageSize) {
+      console.log(`Updating image size to ${historyItem.imageSize} from history item`);
+      setCurrentImageSize(historyItem.imageSize);
     }
   };
 

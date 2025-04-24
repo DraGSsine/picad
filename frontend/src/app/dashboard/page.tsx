@@ -11,7 +11,7 @@ const ImageCanvas: React.FC = () => {
     isPending,
     editMode,
     handleToolClick,
-    currentAspectRatio,
+    currentImageSize,
     setCanvasRef
   } = useDashboard();
 
@@ -35,31 +35,32 @@ const ImageCanvas: React.FC = () => {
   const calculateCanvasDimensions = useCallback(() => {
     if (!containerRef.current) return { width: 400, height: 400 };
 
-    const [widthRatio, heightRatio] = currentAspectRatio.split(":").map(Number);
-    const aspectRatioValue = widthRatio / heightRatio;
+    // Parse the image size format (e.g., "1024x1024" -> {width: 1024, height: 1024})
+    const [width, height] = currentImageSize.split('x').map(Number);
+    const dimensionRatio = width / height;
 
     const containerWidth = containerRef.current.clientWidth - 100;
     const containerHeight = containerRef.current.clientHeight - 40;
 
-    let width, height;
+    let canvasWidth, canvasHeight;
 
     if (containerWidth <= 0 || containerHeight <= 0) {
       return { width: 400, height: 400 };
     }
 
-    if (containerWidth / containerHeight > aspectRatioValue) {
-      height = containerHeight;
-      width = height * aspectRatioValue;
+    if (containerWidth / containerHeight > dimensionRatio) {
+      canvasHeight = containerHeight;
+      canvasWidth = canvasHeight * dimensionRatio;
     } else {
-      width = containerWidth;
-      height = width / aspectRatioValue;
+      canvasWidth = containerWidth;
+      canvasHeight = canvasWidth / dimensionRatio;
     }
 
     return {
-      width: Math.floor(width),
-      height: Math.floor(height)
+      width: Math.floor(canvasWidth),
+      height: Math.floor(canvasHeight)
     };
-  }, [currentAspectRatio]);
+  }, [currentImageSize]);
 
   const scaleAndCenterImage = useCallback((image: FabricImage, canvas: Canvas) => {
     if (!image || !canvas || !canvas.width || !canvas.height || !image.width || !image.height) return;
