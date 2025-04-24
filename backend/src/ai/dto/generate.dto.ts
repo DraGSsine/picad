@@ -19,6 +19,7 @@ export class SettingsDto {
   @IsInt()
   @Min(0)
   @Max(100)
+  tongueLevel: number;
 
   @IsString()
   @IsEnum(['Instagram', 'Facebook', 'TikTok', 'General'])

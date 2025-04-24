@@ -9,10 +9,10 @@ export interface IUser {
 export interface IadCreatorData {
   uploadedImages: string[];
   selectedTemplateUrl: string[];
-  settings: {
-    creativityLevel: number;
-    detailLevel: number;
-    targetPlatform: string;
-    aspectRatio: string;
+  settings?: {
+    creativityLevel?: number;
+    detailLevel?: number;
+    targetPlatform?: string;
+    aspectRatio?: string;
   };
 }

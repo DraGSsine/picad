@@ -47,7 +47,7 @@ const Hero = () => {
             add refined text, remove imperfections, or generate creative elements
             with our sophisticated brush tool.
           </p>
-
+  
           {/* Feature highlights with improved styling */}
           <div
             className="mb-12 lg:w-[85%] animate-fade-in"

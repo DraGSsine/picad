@@ -5,28 +5,26 @@ import { Model } from 'mongoose';
 import { User } from 'src/model/UserSchema';
 import OpenAI from 'openai';
 import { IadCreatorData } from 'src/types/interface';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { GoogleGenAI } from '@google/genai';
 import * as fs from 'fs';
 import * as path from 'path';
-import axios from 'axios';
+import { Console } from 'console';
 
 @Injectable()
 export class AiService {
   private readonly logger = new Logger(AiService.name);
-  private readonly openRouterApiKey: string;
-  private readonly geminiApiKey: string;
-  private readonly ai: any;
+  private readonly openaiApiKey: string;
+  private readonly openai: any;
 
   constructor(
     private configService: ConfigService,
     @InjectModel(User.name) private userModel: Model<User>,
   ) {
-    this.geminiApiKey = this.configService.get('GEMINI_API_KEY')!;
-    this.openRouterApiKey = this.configService.get<string>('OPENROUTER_API_KEY')!;
-
-    // Initialize the AI service
-    this.ai = new GoogleGenAI({ apiKey: this.geminiApiKey });
+    this.openaiApiKey = this.configService.get<string>('OPENAI_API_KEY')!;
+    
+    // Initialize OpenAI client
+    this.openai = new OpenAI({
+      apiKey: this.openaiApiKey,
+    });
   }
 
   /**
@@ -41,8 +39,6 @@ export class AiService {
     userEmail: string,
   ): Promise<{ imageData: string; aspectRatio: string; promptText: string }> {
     try {
-      this.logger.log(`Processing ad generation with prompt: ${prompt?.substring(0, 50)}...`);
-
       // Validate required data
       this.validateAdCreatorData(adCreatorData);
 
@@ -99,10 +95,10 @@ export class AiService {
       const editPrompt = await this.generateEditPrompt(prompt, cleanCurrentImage, adCreatorData);
       
       // Generate the edited image
-      const imageData = await this.generateImage(
+      const imageData = await this.editImage(
         editPrompt, 
-        adCreatorData, 
-        cleanCurrentImage // Pass current image for editing
+        cleanCurrentImage,
+        adCreatorData
       );
 
       // Update user credits
@@ -119,99 +115,188 @@ export class AiService {
   }
 
   /**
-   * Centralized function for generating images (both new and edits)
-   * @param prompt The design/edit prompt to use
-   * @param adCreatorData Settings data
-   * @param currentImage Optional current image for editing
+   * Generate a new image using OpenAI's GPT-4 image model
    */
   private async generateImage(
     prompt: string,
-    adCreatorData: IadCreatorData,
-    currentImage?: string
+    adCreatorData: IadCreatorData
   ): Promise<string> {
     try {
-      const isEditOperation = !!currentImage;
+      const { aspectRatio } = adCreatorData.settings || {};
       
-      // Create appropriate content for generation or editing
-      let content = '';
-      let images: { inlineData: { data: string; mimeType: string } }[] = [];
-      
-      if (isEditOperation) {
-        // Content for editing an existing image
-        content = `Edit this advertisement according to these instructions: ${prompt}
-        
-        Aspect ratio: ${adCreatorData.settings?.aspectRatio || '3:2'}
-        Platform: ${adCreatorData.settings?.targetPlatform || 'Instagram'}
-        
-        Keep the same overall style and composition, but make the specific changes requested.`;
-        
-        // Add the current image to be edited
-        images.push({
-          inlineData: {
-            data: currentImage,
-            mimeType: 'image/jpeg'
-          }
-        });
-      } else {
-        // Content for generating a new image
-        content = `Create an advertisement combining the product image with the template style, following this design direction: ${prompt}
-        
-        Aspect ratio: ${adCreatorData.settings?.aspectRatio || '9:16'}
-        Platform: ${adCreatorData.settings?.targetPlatform || 'Instagram'}
-        
-        Generate a high-quality, professional advertisement.`;
-        
-        // Add product and template images for new generation
-        const productImage = this.cleanBase64Data(adCreatorData.uploadedImages[0]);
-        const templateImage = this.cleanBase64Data(adCreatorData.selectedTemplateUrl[0]);
-        
-        images.push({
-          inlineData: {
-            data: productImage,
-            mimeType: 'image/jpeg'
-          }
-        });
-        
-        images.push({
-          inlineData: {
-            data: templateImage,
-            mimeType: 'image/jpeg'
-          }
-        });
+      // Determine image size based on aspect ratio
+      let size = '1024x1024'; // default square
+      if (aspectRatio) {
+        switch (aspectRatio) {
+          case '16:9':
+            size = '1536x1024';
+            break;
+          case '9:16':
+            size = '1024x1536';
+            break;
+          case '4:5':
+            size = '1024x1280'; // Approximate 4:5 ratio
+            break;
+          default:
+            size = '1024x1024'; // Default to square 1:1
+        }
       }
 
-      // Call Gemini API with appropriate content and images
-      const modelContents = [{
-        role: 'user',
-        parts: [
-          { text: content },
-          ...images
-        ]
-      }];
+      // Generate image with GPT Image model
+      const response = await this.openai.images.generate({
+        model: "gpt-image-1",
+        prompt: `${prompt}\n\nCreate a professional advertisement using the given product and template images as reference.`,
+        n: 1, // Generate one image
+        quality: "low",
+        size: size as any,
+      });
+      console.log("-------------------------------------")
+      console.log(response)
+      console.log("-------------------------------------")
+      // Process the response to get the image data
+      if (!response.data || response.data.length === 0) {
+        throw new Error('No image was generated');
+      }
 
-      // Call the Gemini 2.0 Flash image generation API
-      const response = await this.ai.models.generateContent({
-        model: 'gemini-2.0-flash-exp-image-generation',
-        contents: modelContents,
-        config: {
-          responseModalities: ['Text', 'Image'],
-        },
+      // Check if response has base64 data
+      const imageData = response.data[0]?.b64_json;
+      if (imageData) {
+        // Base64 data is directly available
+        this.logger.log('Successfully received base64 image data');
+        return imageData;
+      }
+      
+      // Fallback to URL if base64 is not available
+      const imageUrl = response.data[0]?.url;
+      if (!imageUrl) {
+        throw new Error('No image data returned');
+      }
+      
+      // Fetch the image from the URL and convert to base64
+      this.logger.log(`Fetching image from URL: ${imageUrl.substring(0, 30)}...`);
+      const imageDataFromUrl = await this.fetchImageAsBase64(imageUrl);
+      
+      return imageDataFromUrl;
+    } catch (error) {
+      this.logger.error('Error generating image', error);
+      throw new Error(`Failed to generate image: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Edit an existing image using OpenAI's GPT-4 image model
+   */
+  private async editImage(
+    prompt: string,
+    currentImage: string,
+    adCreatorData: IadCreatorData
+  ): Promise<string> {
+    try {
+      const { aspectRatio } = adCreatorData.settings || {};
+      
+      // Determine image size based on aspect ratio
+      let size = '1024x1024'; // default square
+      if (aspectRatio) {
+        switch (aspectRatio) {
+          case '16:9':
+            size = '1536x1024';
+            break;
+          case '9:16':
+            size = '1024x1536';
+            break;
+          case '4:5':
+            size = '1024x1280'; // Approximate 4:5 ratio
+            break;
+          default:
+            size = '1024x1024'; // Default to square 1:1
+        }
+      }
+      
+      // Convert base64 to buffer for API
+      const imageBuffer = this.convertBase64ToBuffer(currentImage);
+      
+      // Create a FormData or buffer for the image
+      const imageFile = await this.createImageFile(imageBuffer);
+
+      // Edit image with GPT Image model
+      const response = await this.openai.images.edit({
+        model: "gpt-image-1",
+        image: imageFile,
+        prompt: prompt,
+        n: 1, // Generate one image
+        size: size as any,
       });
 
-      // Extract image and text data
-      const { imageData, textResponse } = this.extractImageFromResponse(response);
-
-      if (!imageData) {
-        throw new Error(`No ${isEditOperation ? 'edited ' : ''}image was generated`);
+      // Process the response to get the image data
+      if (!response.data || response.data.length === 0) {
+        throw new Error('No edited image was generated');
       }
 
-      // Log the text response
-      this.logger.log(`Generated ${isEditOperation ? 'edited ' : ''}image with text: ${textResponse?.substring(0, 50)}...`);
-
+      // Get image URL and fetch the image data
+      const imageUrl = response.data[0]?.url;
+      if (!imageUrl) {
+        throw new Error('No image URL returned');
+      }
+      
+      // Fetch the image from the URL and convert to base64
+      const imageData = await this.fetchImageAsBase64(imageUrl);
+      
       return imageData;
     } catch (error) {
-      this.logger.error(`Error in image ${currentImage ? 'editing' : 'generation'}`, error);
-      throw new Error(`Failed to ${currentImage ? 'edit' : 'generate'} image: ${error.message || 'Unknown error'}`);
+      this.logger.error('Error editing image', error);
+      throw new Error(`Failed to edit image: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Fetch an image from URL and convert to base64
+   */
+  private async fetchImageAsBase64(imageUrl: string): Promise<string> {
+    try {
+      // Use node-fetch or axios to download the image
+      const axios = require('axios');
+      const response = await axios({
+        url: imageUrl,
+        method: 'GET',
+        responseType: 'arraybuffer',
+      });
+      
+      // Convert the image to base64
+      const buffer = Buffer.from(response.data);
+      return buffer.toString('base64');
+    } catch (error) {
+      this.logger.error('Error fetching image', error);
+      throw new Error(`Failed to fetch image: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Create a File object from Buffer for OpenAI API
+   */
+  private async createImageFile(buffer: Buffer): Promise<File | any> {
+    try {
+      // Use the toFile utility from OpenAI if available
+      if (typeof OpenAI.toFile === 'function') {
+        return await OpenAI.toFile(buffer, 'image.png', { type: 'image/png' });
+      }
+      
+      // Create a Blob and then a File object (for Node.js environments)
+      return new File([buffer], 'image.png', { type: 'image/png' });
+    } catch (error) {
+      // If File API is not available (older Node.js versions), return buffer or readable stream
+      this.logger.warn('File API not available, using alternative approach');
+      
+      // Create a readable stream from buffer
+      const { Readable } = require('stream');
+      const stream = new Readable();
+      stream.push(buffer);
+      stream.push(null);
+      
+      return {
+        stream: () => stream,
+        name: 'image.png',
+        type: 'image/png',
+      };
     }
   }
 
@@ -228,52 +313,17 @@ export class AiService {
       const templateImage = this.cleanBase64Data(adCreatorData.selectedTemplateUrl[0]);
 
       // Create prompt text for design generation
-      const promptText = `Generate a clear, concise design prompt for incorporating the product into the template style.
-
-      The prompt should be medium length (100-150 words) focusing on:
-      - Key visual elements to include
-      - Color palette alignment 
-      - Product placement
-      - Overall composition
-
+      const promptText = `Generate an advertisement that combines the product image with the template style.
+      
       Design parameters:
       - Creativity: ${adCreatorData.settings?.creativityLevel || 50}%
       - Detail: ${adCreatorData.settings?.detailLevel || 50}%
       - Platform: ${adCreatorData.settings?.targetPlatform || 'Instagram'}
       - Aspect ratio: ${adCreatorData.settings?.aspectRatio || '9:16'}
       
-      Additional guidance: ${prompt || 'Create a professional advertisement'}
-      
-      Keep the prompt actionable and focused - it will be used directly for generating the final image.`;
+      Additional guidance: ${prompt || 'Create a professional advertisement'}`;
 
-      // Call OpenRouter API with Gemini model
-      const messages = [
-        {
-          role: 'system',
-          content: 'You are a precise and detail-oriented assistant that generates optimized design prompts for advertisements.',
-        },
-        {
-          role: 'user',
-          content: [
-            { type: 'text', text: promptText },
-            {
-              type: 'image_url',
-              image_url: { url: `data:image/jpeg;base64,${uploadedImage}` },
-            },
-            {
-              type: 'image_url',
-              image_url: { url: `data:image/jpeg;base64,${templateImage}` },
-            },
-          ],
-        },
-      ];
-
-      const response = await this.callOpenRouter(messages);
-      console.log("---------->",response.data);
-      const designPrompt = response.data.choices[0].message.content.trim();
-      
-      this.logger.log(`Generated design prompt: ${designPrompt.substring(0, 50)}...`);
-      return designPrompt;
+      return promptText;
     } catch (error) {
       this.logger.error('Error generating design prompt', error);
       throw new Error(`Failed to generate design prompt: ${error.message || 'Unknown error'}`);
@@ -290,51 +340,15 @@ export class AiService {
   ): Promise<string> {
     try {
       // Create prompt text for edit operation
-      const promptText = `Generate a clear, precise edit instruction for modifying the existing advertisement.
-
-      The instruction should focus on:
-      - Specific changes requested in the user prompt
-      - Maintaining the overall composition and style
-      - Only modifying elements that need to change
-      - Preserving the product placement and branding
-
+      const editPrompt = `Edit this advertisement according to these instructions: ${prompt}
+      
       Edit parameters:
       - Target platform: ${adCreatorData.settings?.targetPlatform || 'Instagram'}
       - Aspect ratio: ${adCreatorData.settings?.aspectRatio || '3:2'}
       
-      User's edit request: ${prompt || 'Improve the ad'}
-      
-      Keep the edit instruction actionable and focused on what needs to change in the existing image.`;
+      Keep the same overall style and composition, but make the specific changes requested.`;
 
-      // Call OpenRouter API with Gemini model
-      const messages = [
-        {
-          role: 'system',
-          content: 'You are a precise and detail-oriented assistant that generates optimized edit instructions for advertisements.',
-        },
-        {
-          role: 'user',
-          content: [
-            { type: 'text', text: promptText },
-            {
-              type: 'image_url',
-              image_url: { url: `data:image/jpeg;base64,${currentImage}` },
-            },
-          ],
-        },
-      ];
-
-      const response = await this.callOpenRouter(messages);
-      
-      if (response.data?.choices?.[0]?.message?.content) {
-        const editPrompt = response.data.choices[0].message.content.trim();
-        this.logger.log(`Generated edit prompt: ${editPrompt.substring(0, 50)}...`);
-        return editPrompt;
-      }
-
-      // Fallback if response format is unexpected
-      this.logger.warn('Unexpected API response structure. Using fallback edit prompt.');
-      return `Edit the advertisement according to these instructions: ${prompt}`;
+      return editPrompt;
     } catch (error) {
       this.logger.error('Error generating edit prompt', error);
       return `Edit the advertisement according to these instructions: ${prompt}`;
@@ -342,44 +356,12 @@ export class AiService {
   }
 
   /**
-   * Centralized function for calling OpenRouter API
+   * Convert base64 string to Buffer
    */
-  private async callOpenRouter(messages: any[]): Promise<any> {
-    return axios.post(
-      'https://openrouter.ai/api/v1/chat/completions',
-      {
-        model:"google/gemini-2.0-flash-exp:free",
-        messages: messages,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${this.openRouterApiKey}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://picad.pro',
-          'X-Title': 'Ad Creator',
-        },
-      },
-    );
-  }
-
-  /**
-   * Extract image data from Gemini API response
-   */
-  private extractImageFromResponse(response: any): { imageData: string; textResponse: string } {
-    let imageData = '';
-    let textResponse = '';
-
-    if (response?.candidates?.[0]?.content?.parts) {
-      for (const part of response.candidates[0].content.parts) {
-        if (part.text) {
-          textResponse = part.text;
-        } else if (part.inlineData) {
-          imageData = part.inlineData.data || '';
-        }
-      }
-    }
-
-    return { imageData, textResponse };
+  private convertBase64ToBuffer(base64String: string): Buffer {
+    // Clean the base64 string
+    const cleanBase64 = this.cleanBase64Data(base64String);
+    return Buffer.from(cleanBase64, 'base64');
   }
 
   /**
