@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, memo, useMemo } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import {
@@ -25,11 +25,12 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { api } from "@/lib/axios";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 
 // Simple storage structure
 interface adCreatorData {
-  uploadedImages: string[]; // Array of base64 strings
-  selectedTemplateUrl: string[]; // Array of template URLs
+  uploadedImages: string[];
+  selectedTemplateUrl: string[];
   settings: {
     creativityLevel: number;
     detailLevel: number;
@@ -37,7 +38,7 @@ interface adCreatorData {
   };
 }
 
-// Template interface matching the one in templateModal.tsx
+// Template interface
 interface Template {
   id: number;
   name: string;
@@ -47,26 +48,112 @@ interface Template {
 
 const LOCAL_STORAGE_KEY = "adCreatorData";
 
+// Memoized image thumbnail component to prevent re-renders
+const ImageThumbnail = memo(({ 
+  base64, 
+  index, 
+  onRemove 
+}: { 
+  base64: string; 
+  index: number; 
+  onRemove: (index: number) => void 
+}) => (
+  <div
+    className="relative w-16 h-16 rounded-md overflow-hidden border border-primary/30 shadow-md group/thumb"
+    onClick={(e) => e.stopPropagation()}
+  >
+    <Image
+      src={base64}
+      alt={`Uploaded image ${index + 1}`}
+      fill
+      sizes="64px"
+      className="object-cover"
+    />
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        onRemove(index);
+      }}
+      className="absolute top-0 right-0 bg-white/90 hover:bg-destructive/20 w-5 h-5 flex items-center justify-center rounded-bl-md transition-colors"
+    >
+      <Delete02Icon className="h-3 w-3 text-destructive" />
+    </button>
+  </div>
+));
+ImageThumbnail.displayName = 'ImageThumbnail';
+
+// Placeholder thumbnail for loading state
+const LoadingThumbnail = () => (
+  <div
+    className="relative w-16 h-16 rounded-md overflow-hidden border border-primary/30 shadow-md bg-muted/30 animate-pulse"
+    onClick={(e) => e.stopPropagation()}
+  >
+    <div className="absolute inset-0 flex items-center justify-center">
+      <RefreshIcon className="h-5 w-5 text-primary/50 animate-spin" />
+    </div>
+  </div>
+);
+
+// Memoized template card component
+const TemplateCard = memo(({ 
+  template, 
+  onClick 
+}: { 
+  template: Template; 
+  onClick: (template: Template) => void 
+}) => (
+  <div
+    className="aspect-[9/16] rounded-xl overflow-hidden cursor-pointer shadow-md hover:shadow-lg transition-shadow duration-100 group"
+    onClick={() => onClick(template)}
+  >
+    <div className="relative h-full">
+      <Image
+        src={template.imageUrl}
+        alt={template.name}
+        fill
+        sizes="(max-width: 768px) 100vw, 200px"
+        className="object-cover"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute bottom-3 left-3 right-3">
+          <Badge
+            variant="outline"
+            className="bg-white/90 text-foreground mb-1.5 border-transparent font-normal shadow-sm"
+          >
+            {template.category}
+          </Badge>
+          <p className="text-xs text-white font-medium truncate bg-black/40 rounded-md px-2 py-1 shadow-inner">
+            {template.name}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+));
+TemplateCard.displayName = 'TemplateCard';
+
+// Main sidebar component
 const Sidebar = () => {
   // UI state
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(false);
 
-  // Data state - simplified
-  const [uploadedImages, setUploadedImages] = useState<string[]>([]); // Just the base64 strings
-  const [selectedTemplateUrl, setSelectedTemplateUrl] = useState<string[]>([]); // Initialize as empty array
-  const [activeTemplate, setActiveTemplate] = useState<Template | null>(null); // Template object from API
+  // Data state
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [selectedTemplateUrl, setSelectedTemplateUrl] = useState<string[]>([]);
+  const [activeTemplate, setActiveTemplate] = useState<Template | null>(null);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loadingTemplates, setLoadingTemplates] = useState(false);
 
   // Settings state
-  const [creativityLevel, setCreativityLevel] = useState(50);
+  const [creativityLevel, setCreativityLevel] = useState(0);
   const [detailLevel, setDetailLevel] = useState(50);
-  const [imageSize, setImageSize] = useState("1024x1024"); // Default to square image
+  const [imageSize, setImageSize] = useState("1024x1536");
   const [selectedCategory, setSelectedCategory] = useState("all");
 
-  // Save simplified data to localStorage
+  // Save data to localStorage - memoized to prevent unnecessary function recreation
   const saveAppData = useCallback(() => {
     if (!isMounted) return;
 
@@ -96,12 +183,9 @@ const Sidebar = () => {
         const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
         if (savedData) {
           const parsedData = JSON.parse(savedData) as adCreatorData;
-
-          // Restore simple data
           setUploadedImages(parsedData.uploadedImages || []);
-          setSelectedTemplateUrl(parsedData.selectedTemplateUrl);
-
-          // Restore settings
+          setSelectedTemplateUrl(parsedData.selectedTemplateUrl || []);
+          
           const settings = parsedData.settings || {};
           setCreativityLevel(settings.creativityLevel || 50);
           setDetailLevel(settings.detailLevel || 50);
@@ -113,20 +197,41 @@ const Sidebar = () => {
     }
   }, []);
 
-  // Save data whenever it changes
+  // Save data when state changes - throttled to avoid performance issues
   useEffect(() => {
-    saveAppData();
+    // Debounce saving to localStorage
+    const timeoutId = setTimeout(() => {
+      saveAppData();
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
   }, [uploadedImages, selectedTemplateUrl, creativityLevel, detailLevel, imageSize, saveAppData]);
 
-  // When a template is selected, store its URL in the array
-  const handleTemplateSelection = (template: Template) => {
-    setActiveTemplate(template);
-    // Set the first element of the array to the selected template URL
-    setSelectedTemplateUrl([template.imageUrl]);
-  };
+  // Template selection handler - memoized - UPDATED to store URL and let backend handle it
+  const handleTemplateSelection = useCallback(async (template: Template) => {
+    try {
+      // Check if the image is already base64
+      const isBase64 = template.imageUrl.startsWith('data:');
 
-  // When we have a selectedTemplateUrl but no activeTemplate,
-  // find matching template (after template load)
+      if (isBase64) {
+        // Already base64, store as is
+        setSelectedTemplateUrl([template.imageUrl]);
+        setActiveTemplate(template);
+        return;
+      }
+
+      // Store the URL directly and let the backend handle fetching the image
+      setSelectedTemplateUrl([template.imageUrl]);
+      setActiveTemplate(template);
+    } catch (error) {
+      console.error("Failed to process template image:", error);
+      // Fallback to using URL directly
+      setSelectedTemplateUrl([template.imageUrl]);
+      setActiveTemplate(template);
+    }
+  }, []);
+
+  // Match template when loaded
   useEffect(() => {
     if (selectedTemplateUrl.length > 0 && !activeTemplate && templates.length > 0) {
       const matchingTemplate = templates.find((t) => t.imageUrl === selectedTemplateUrl[0]);
@@ -136,7 +241,7 @@ const Sidebar = () => {
     }
   }, [selectedTemplateUrl, activeTemplate, templates]);
 
-  // Handle responsive behavior
+  // Handle responsive behavior - optimized to run less frequently
   useEffect(() => {
     const handleResize = () => {
       if (typeof window !== "undefined") {
@@ -152,36 +257,46 @@ const Sidebar = () => {
     }
   }, []);
 
-  // Fetch templates from the API - optimized to avoid duplicate fetches
+  // Fetch templates - optimized to reduce unnecessary API calls
   useEffect(() => {
+    let isCancelled = false;
+    
     const fetchTemplates = async () => {
       if (!isMounted) return;
 
       setLoadingTemplates(true);
       try {
         const response = await api.get(`/users/templates?categorie=${selectedCategory}`);
-        if (response.data) {
+        if (!isCancelled && response.data) {
           setTemplates(response.data);
         }
       } catch (error) {
-        console.error("Error fetching templates:", error);
+        if (!isCancelled) {
+          console.error("Error fetching templates:", error);
+        }
       } finally {
-        setLoadingTemplates(false);
+        if (!isCancelled) {
+          setLoadingTemplates(false);
+        }
       }
     };
 
     fetchTemplates();
+    
+    return () => {
+      isCancelled = true;
+    };
   }, [selectedCategory, isMounted]);
 
-  // Reset settings to defaults
-  const resetSettings = () => {
-    setCreativityLevel(50);
+  // Reset settings - memoized
+  const resetSettings = useCallback(() => {
+    setCreativityLevel(10);
     setDetailLevel(50);
-    setImageSize("1024x1024");
-  };
+    setImageSize("1024x1536");
+  }, []);
 
-  // Handle product image upload - storing just the base64
-  const handleProductImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Image upload handler - memoized
+  const handleProductImageUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files || event.target.files.length === 0) return;
 
     const newFiles = Array.from(event.target.files);
@@ -191,6 +306,8 @@ const Sidebar = () => {
       alert("You can upload a maximum of 4 images");
       return;
     }
+
+    setUploadingImages(true);
 
     // Process each file to get base64
     Promise.all(
@@ -206,14 +323,15 @@ const Sidebar = () => {
       })
     ).then((newBases64) => {
       setUploadedImages((prev) => [...prev, ...newBases64]);
+      setUploadingImages(false);
     });
 
     // Clear the input
     event.target.value = "";
-  };
+  }, [uploadedImages]);
 
-  // Handle custom template upload - store just the base64
-  const handleCustomTemplateUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Custom template upload handler - memoized
+  const handleCustomTemplateUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files || event.target.files.length === 0) return;
 
     const file = event.target.files[0];
@@ -221,16 +339,13 @@ const Sidebar = () => {
 
     reader.onload = (e) => {
       const base64 = e.target?.result as string;
+      setSelectedTemplateUrl([base64]); // Store the base64 data directly
 
-      // Store in array
-      setSelectedTemplateUrl([base64]);
-
-      // Also create a temp object for UI display
       const customTemplate: Template = {
         id: Date.now(),
         name: file.name.split(".")[0] || "Custom Template",
         category: "custom",
-        imageUrl: base64,
+        imageUrl: base64, // For display purposes
       };
 
       setActiveTemplate(customTemplate);
@@ -238,14 +353,15 @@ const Sidebar = () => {
 
     reader.readAsDataURL(file);
     event.target.value = "";
-  };
+  }, []);
 
-  // Remove an image by index
-  const removeUploadedImage = (indexToRemove: number) => {
+  // Remove image handler - memoized
+  const removeUploadedImage = useCallback((indexToRemove: number) => {
     setUploadedImages((prev) => prev.filter((_, index) => index !== indexToRemove));
-  };
+  }, []);
 
-  const categories = [
+  // Memoized categories array
+  const categories = useMemo(() => [
     "all",
     "lifestyle",
     "product",
@@ -257,62 +373,118 @@ const Sidebar = () => {
     "travel",
     "accessories",
     "shoes",
-  ];
+  ], []);
 
-  const displayedTemplates = templates.slice(0, 3);
+  // Limited displayed templates for performance
+  const displayedTemplates = useMemo(() => 
+    templates.slice(0, 3), 
+    [templates]
+  );
 
-  const renderSidebarExpandedContent = () => (
-    <div className="flex-1 custom-scrollbar rounded-3xl bg-background/80">
+  // Toggle sidebar collapse handler - memoized
+  const toggleSidebar = useCallback(() => {
+    setIsSidebarCollapsed(prev => !prev);
+  }, []);
+
+  // Template modal open handler - memoized
+  const openTemplateModal = useCallback(() => {
+    setShowTemplateModal(true);
+  }, []);
+
+  // Process template selection from modal - UPDATED for consistent base64 handling
+  const handleTemplateModalSelection = useCallback(async (template: Template) => {
+    try {
+      // Always fetch the image and convert to base64, whether it's a URL or already base64
+      const isBase64 = template.imageUrl.startsWith('data:');
+      
+      if (isBase64) {
+        // Already base64, use as is
+        setSelectedTemplateUrl([template.imageUrl]);
+        setActiveTemplate(template);
+        setShowTemplateModal(false);
+        return;
+      }
+      
+      // Fetch the image and convert to base64
+      const response = await fetch(template.imageUrl);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.status}`);
+      }
+      
+      const blob = await response.blob();
+      
+      return new Promise<void>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64Data = reader.result as string;
+          setSelectedTemplateUrl([base64Data]);
+          setActiveTemplate(template);
+          setShowTemplateModal(false);
+          resolve();
+        };
+        reader.onerror = () => {
+          console.error("Error converting image to base64");
+          // Fallback to URL but with warning
+          setSelectedTemplateUrl([template.imageUrl]);
+          setActiveTemplate(template);
+          setShowTemplateModal(false);
+          resolve();
+        };
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.error("Failed to process template image:", error);
+      // Fallback to using URL directly
+      setSelectedTemplateUrl([template.imageUrl]);
+      setActiveTemplate(template);
+      setShowTemplateModal(false);
+    }
+  }, []);
+
+  // Clear template selection - memoized
+  const clearTemplateSelection = useCallback(() => {
+    setSelectedTemplateUrl([]);
+    setActiveTemplate(null);
+  }, []);
+
+  // Memoized sidebar expanded content to prevent re-renders
+  const sidebarExpandedContent = useMemo(() => (
+    <div className="flex-1 custom-scrollbar rounded-3xl">
       <div className="p-5 space-y-8">
-        {/* Upload Section - With Image Preview Grid */}
+        {/* Upload Section */}
         <section className="space-y-4">
           <div className="flex items-center gap-2">
-            <div className="h-6 w-1 bg-primary rounded-full shadow-[0_0_6px_rgba(var(--primary),0.3)]"></div>
+            <div className="h-6 w-1 bg-primary rounded-full"></div>
             <h3 className="text-sm font-semibold text-foreground flex items-center">
-              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mr-2 shadow-inner">
+              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mr-2">
                 <ImageUploadIcon className="h-5 w-5 text-primary" />
               </div>
               Product Images ({uploadedImages.length}/4)
             </h3>
           </div>
 
-          {/* New integrated upload area with embedded thumbnails */}
+          {/* Upload area with thumbnails */}
           <div className="relative group cursor-pointer">
             <Card
-              className="border-[1.5px] border-dashed rounded-3xl border-primary/20 overflow-hidden hover:border-primary/60 transition-colors duration-300 bg-background/60 backdrop-blur-sm shadow-md"
+              className="border-[1.5px] border-dashed rounded-3xl border-primary/20 overflow-hidden hover:border-primary/60 transition-colors bg-background/60 shadow-md"
               onClick={() =>
                 uploadedImages.length < 4 &&
                 document.getElementById("productImageUpload")?.click()
               }
             >
               <div className="p-6 flex flex-col items-center relative">
-                {/* Thumbnail previews for uploaded images */}
+                {/* Thumbnail previews */}
                 {uploadedImages.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-4 justify-center">
                     {uploadedImages.map((base64, index) => (
-                      <div
+                      <ImageThumbnail 
                         key={index}
-                        className="relative w-16 h-16 rounded-md overflow-hidden border border-primary/30 shadow-md group/thumb"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Image
-                          src={base64}
-                          alt={`Uploaded image ${index + 1}`}
-                          fill
-                          sizes="64px"
-                          className="object-cover transition-transform duration-500 group-hover/thumb:scale-110"
-                        />
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeUploadedImage(index);
-                          }}
-                          className="absolute top-0 right-0 bg-white/90 hover:bg-destructive/20 w-5 h-5 flex items-center justify-center rounded-bl-md transition-colors duration-300"
-                        >
-                          <Delete02Icon className="h-3 w-3 text-destructive" />
-                        </button>
-                      </div>
+                        base64={base64}
+                        index={index}
+                        onRemove={removeUploadedImage}
+                      />
                     ))}
+                    {uploadingImages && <LoadingThumbnail />}
                   </div>
                 )}
 
@@ -321,7 +493,7 @@ const Sidebar = () => {
                     uploadedImages.length >= 4 ? "opacity-50" : ""
                   }`}
                 >
-                  <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform duration-300">
+                  <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-3">
                     <Upload01Icon className="h-5 w-5 text-primary" />
                   </div>
 
@@ -334,7 +506,7 @@ const Sidebar = () => {
                   </p>
 
                   {uploadedImages.length < 4 && (
-                    <label className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-full transition-all duration-300 font-medium inline-block cursor-pointer hover:shadow-md hover:shadow-primary/20 hover:translate-y-[-2px]">
+                    <label className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-full transition-all font-medium inline-block cursor-pointer hover:shadow-md">
                       Browse Files
                       <input
                         id="productImageUpload"
@@ -353,47 +525,37 @@ const Sidebar = () => {
                 </div>
               </div>
             </Card>
-
-            {/* Subtle hover effect */}
-            <div
-              className={`absolute inset-0 bg-primary/0 ${
-                uploadedImages.length < 4 ? "group-hover:bg-primary/5" : ""
-              } rounded-3xl transition-colors duration-300 pointer-events-none`}
-            ></div>
           </div>
         </section>
 
         {/* Template Section */}
         <section className="space-y-4">
           <div className="flex items-center gap-2">
-            <div className="h-6 w-1 bg-secondary rounded-full shadow-[0_0_6px_rgba(var(--secondary),0.3)]"></div>
+            <div className="h-6 w-1 bg-secondary rounded-full"></div>
             <h3 className="text-sm font-semibold text-foreground flex items-center">
-              <div className="h-8 w-8 rounded-full bg-secondary/10 flex items-center justify-center mr-2 shadow-inner">
+              <div className="h-8 w-8 rounded-full bg-secondary/10 flex items-center justify-center mr-2">
                 <CustomizeIcon className="h-5 w-5 text-secondary" />
               </div>
               Template Selection
             </h3>
           </div>
 
-          {/* Template Grid with Modern Cards */}
+          {/* Template Grid */}
           <div className="grid grid-cols-2 gap-3">
             {/* Active template or upload button */}
             {selectedTemplateUrl.length > 0 ? (
-              <div className="aspect-[9/16] rounded-xl overflow-hidden relative group shadow-md hover:shadow-lg transition-shadow duration-300 hover:ring-2 hover:ring-primary/40 hover:ring-offset-1">
+              <div className="aspect-[9/16] rounded-xl overflow-hidden relative group shadow-md">
                 <Image
-                  src={selectedTemplateUrl[0]} // Always use the first URL in the array
+                  src={selectedTemplateUrl[0]}
                   alt={activeTemplate?.name || "Selected template"}
                   fill
                   sizes="(max-width: 768px) 100vw, 200px"
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10 opacity-0 group-hover:opacity-100 transition-opacity">
                   <div
-                    className="absolute top-2 right-2 bg-white/90 rounded-full p-1.5 cursor-pointer shadow-sm hover:bg-white hover:shadow-md transition-all hover:scale-110"
-                    onClick={() => {
-                      setSelectedTemplateUrl([]);
-                      setActiveTemplate(null);
-                    }}
+                    className="absolute top-2 right-2 bg-white/90 rounded-full p-1.5 cursor-pointer shadow-sm hover:bg-white"
+                    onClick={clearTemplateSelection}
                   >
                     <Cancel01Icon className="h-3.5 w-3.5 text-destructive" />
                   </div>
@@ -405,7 +567,7 @@ const Sidebar = () => {
                       >
                         {activeTemplate.category}
                       </Badge>
-                      <p className="text-xs text-white font-medium truncate bg-black/40 backdrop-blur-sm rounded-md px-2 py-1 shadow-inner">
+                      <p className="text-xs text-white font-medium truncate bg-black/40 rounded-md px-2 py-1 shadow-inner">
                         {activeTemplate.name}
                       </p>
                     </div>
@@ -414,12 +576,12 @@ const Sidebar = () => {
               </div>
             ) : (
               <div
-                className="aspect-[9/16] bg-background rounded-xl flex flex-col items-center justify-center cursor-pointer border border-primary/20 hover:border-primary/40 hover:shadow-lg transition-all duration-300 shadow-sm"
+                className="aspect-[9/16] bg-background rounded-xl flex flex-col items-center justify-center cursor-pointer border border-primary/20 hover:border-primary/40 transition-all shadow-sm"
                 onClick={() =>
                   document.getElementById("templateUpload")?.click()
                 }
               >
-                <div className="p-4 bg-primary/10 rounded-full shadow-sm mb-3 hover:scale-110 transition-transform duration-300 border border-primary/20">
+                <div className="p-4 bg-primary/10 rounded-full shadow-sm mb-3 border border-primary/20">
                   <PlusSignIcon className="h-7 w-7 text-primary" />
                 </div>
                 <p className="text-sm text-primary font-medium">
@@ -440,60 +602,37 @@ const Sidebar = () => {
 
             {/* Display templates */}
             {displayedTemplates.map((template) => (
-              <div
-                key={template.id}
-                className="aspect-[9/16] rounded-xl overflow-hidden cursor-pointer shadow-md hover:shadow-lg transition-shadow duration-300 group hover:ring-2 hover:ring-primary/40 hover:ring-offset-1"
-                onClick={() => handleTemplateSelection(template)}
-              >
-                <div className="relative h-full">
-                  <Image
-                    src={template.imageUrl}
-                    alt={template.name}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 200px"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                    <div className="absolute bottom-3 left-3 right-3">
-                      <Badge
-                        variant="outline"
-                        className="bg-white/90 text-foreground mb-1.5 border-transparent font-normal shadow-sm"
-                      >
-                        {template.category}
-                      </Badge>
-                      <p className="text-xs text-white font-medium truncate bg-black/40 backdrop-blur-sm rounded-md px-2 py-1 shadow-inner">
-                        {template.name}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <TemplateCard 
+                key={template.id} 
+                template={template}
+                onClick={handleTemplateSelection}
+              />
             ))}
           </div>
 
           <Button
-            onClick={() => setShowTemplateModal(true)}
+            onClick={openTemplateModal}
             variant="outline"
             className="w-full py-3 text-sm bg-primary text-primary-foreground rounded-full border-none
-              hover:shadow-md hover:bg-primary/90 transition-all font-medium group h-auto hover:translate-y-[-1px]"
+              hover:shadow-md hover:bg-primary/90 transition-all font-medium h-auto"
           >
             Browse template gallery
-            <ArrowRight01Icon className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight01Icon className="h-4 w-4 ml-2" />
           </Button>
         </section>
 
         {/* Settings Section */}
         <section className="space-y-4">
           <div className="flex items-center gap-2">
-            <div className="h-6 w-1 bg-primary rounded-full shadow-[0_0_6px_rgba(var(--primary),0.3)]"></div>
+            <div className="h-6 w-1 bg-primary rounded-full"></div>
             <h3 className="text-sm font-semibold text-foreground flex items-center">
-              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mr-2 shadow-inner">
+              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mr-2">
                 <SlidersVerticalIcon className="h-5 w-5 text-primary" />
               </div>
               Settings
             </h3>
           </div>
-          <Card className="border-[1.5px] border-primary/20 shadow-md rounded-3xl overflow-hidden bg-card/40 backdrop-blur-sm hover:border-primary/30 transition-all duration-300">
+          <Card className="border-[1.5px] border-primary/20 shadow-md rounded-3xl overflow-hidden bg-card/40 hover:border-primary/30 transition-colors">
             <div className="space-y-6 p-6 bg-background/60">
               {/* Image Size Selector */}
               <div>
@@ -503,19 +642,59 @@ const Sidebar = () => {
                     Image Size
                   </label>
                 </div>
-                <div className="grid grid-cols-3 gap-2 pl-6">
-                  {["1024x1024", "1536x1024", "1024x1536"].map((size) => (
-                    <Button
-                      key={size}
-                      variant="outline"
-                      size="sm"
-                      className="py-1 h-auto text-xs border-primary/30 hover:bg-primary/10 hover:text-primary hover:border-primary/50 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary"
-                      data-state={size === imageSize ? "active" : "inactive"}
-                      onClick={() => setImageSize(size)}
-                    >
-                      {size}
-                    </Button>
-                  ))}
+                <div className="pl-6">
+                  <Select value={imageSize} onValueChange={setImageSize}>
+                    <SelectTrigger className="w-full max-w-xs bg-background border border-primary/30 rounded-md focus:ring-1 focus:ring-primary">
+                      <SelectValue>
+                        <div className="flex items-center gap-2">
+                          {imageSize === "1024x1024" && (
+                            <>
+                              <div className="w-6 h-6 bg-primary/20 border border-primary rounded-[4px] mr-2" />
+                              <span>1:1 (Square)</span>
+                            </>
+                          )}
+                          {imageSize === "1536x1024" && (
+                            <>
+                              <div className="w-9 h-5 bg-primary/20 border border-primary rounded-[4px] mr-2" />
+                              <span>3:2 (Landscape)</span>
+                            </>
+                          )}
+                          {imageSize === "1024x1536" && (
+                            <>
+                              <div className="w-5 h-9 bg-primary/20 border border-primary rounded-[4px] mr-2" />
+                              <span>2:3 (Portrait)</span>
+                            </>
+                          )}
+                        </div>
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1024x1024">
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center justify-center" style={{ width: 36, height: 36 }}>
+                            <div className="w-6 h-6 bg-primary/20 border border-primary rounded-[4px]" />
+                          </div>
+                          <span>1:1 (Square)</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="1536x1024">
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center justify-center" style={{ width: 36, height: 36 }}>
+                            <div className="w-9 h-5 bg-primary/20 border border-primary rounded-[4px]" />
+                          </div>
+                          <span>3:2 (Landscape)</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="1024x1536">
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center justify-center" style={{ width: 36, height: 36 }}>
+                            <div className="w-5 h-9 bg-primary/20 border border-primary rounded-[4px]" />
+                          </div>
+                          <span>2:3 (Portrait)</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -526,7 +705,7 @@ const Sidebar = () => {
                   <label className="text-xs font-medium text-foreground">
                     Detail Level
                   </label>
-                  <div className="ml-auto bg-primary/10 rounded-full py-0.5 px-3 shadow-inner">
+                  <div className="ml-auto bg-primary/10 rounded-full py-0.5 px-3">
                     <span className="text-xs font-medium w-6 items-center justify-center flex text-primary">
                       {detailLevel}%
                     </span>
@@ -555,7 +734,7 @@ const Sidebar = () => {
                   <label className="text-xs font-medium text-foreground">
                     Creativity Level
                   </label>
-                  <div className="ml-auto bg-secondary/10 rounded-full py-0.5 px-3 shadow-inner">
+                  <div className="ml-auto bg-secondary/10 rounded-full py-0.5 px-3">
                     <span className="text-xs font-medium w-6 items-center justify-center flex text-secondary">
                       {creativityLevel}%
                     </span>
@@ -582,18 +761,24 @@ const Sidebar = () => {
           <Button
             variant="outline"
             onClick={resetSettings}
-            className="w-full py-3 h-auto text-muted-foreground border-border hover:bg-muted/50 transition-all flex items-center justify-center gap-2 rounded-full group"
+            className="w-full py-3 h-auto text-muted-foreground border-border hover:bg-muted/50 transition-all flex items-center justify-center gap-2 rounded-full"
           >
-            <RefreshIcon className="h-3 w-3 group-hover:rotate-180 transition-transform duration-500" />
+            <RefreshIcon className="h-3 w-3" />
             Reset Settings
           </Button>
         </section>
       </div>
     </div>
-  );
+  ), [
+    uploadedImages, removeUploadedImage, uploadingImages, selectedTemplateUrl, activeTemplate, 
+    displayedTemplates, handleTemplateSelection, openTemplateModal, clearTemplateSelection,
+    imageSize, detailLevel, creativityLevel, handleProductImageUpload, handleCustomTemplateUpload,
+    resetSettings
+  ]);
 
-  const renderCollapsedSidebar = () => (
-    <div className="flex flex-col items-center py-6 space-y-8 animate-fade-in">
+  // Memoized collapsed sidebar content
+  const collapsedSidebarContent = useMemo(() => (
+    <div className="flex flex-col items-center py-6 space-y-8">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -601,7 +786,7 @@ const Sidebar = () => {
               onClick={() => setIsSidebarCollapsed(false)}
               size="icon"
               variant="outline"
-              className="p-2.5 bg-primary rounded-full shadow-md hover:shadow-lg hover:bg-primary/90 text-primary-foreground hover:scale-110 transition-all border-primary/40"
+              className="p-2.5 bg-primary rounded-full shadow-md hover:shadow-lg hover:bg-primary/90 text-primary-foreground border-primary/40"
             >
               <ArrowRight01Icon className="h-5 w-5" />
             </Button>
@@ -619,7 +804,7 @@ const Sidebar = () => {
             <Button
               size="icon"
               variant="ghost"
-              className="p-2.5 hover:bg-primary/10 rounded-full shadow-sm hover:shadow-md text-foreground/70 hover:text-primary transition-all duration-300 hover:scale-105"
+              className="p-2.5 hover:bg-primary/10 rounded-full shadow-sm hover:shadow-md text-foreground/70 hover:text-primary"
             >
               <ImageUploadIcon className="h-10 w-10" />
             </Button>
@@ -637,7 +822,7 @@ const Sidebar = () => {
             <Button
               size="icon"
               variant="ghost"
-              className="p-2.5 hover:bg-secondary/10 rounded-full shadow-sm hover:shadow-md text-foreground/70 hover:text-secondary transition-all duration-300 hover:scale-105"
+              className="p-2.5 hover:bg-secondary/10 rounded-full shadow-sm hover:shadow-md text-foreground/70 hover:text-secondary"
             >
               <CustomizeIcon className="h-5 w-5" />
             </Button>
@@ -655,7 +840,7 @@ const Sidebar = () => {
             <Button
               size="icon"
               variant="ghost"
-              className="p-2.5 hover:bg-primary/10 rounded-full shadow-sm hover:shadow-md text-foreground/70 hover:text-primary transition-all duration-300 hover:scale-105"
+              className="p-2.5 hover:bg-primary/10 rounded-full shadow-sm hover:shadow-md text-foreground/70 hover:text-primary"
             >
               <SlidersVerticalIcon className="h-5 w-5" />
             </Button>
@@ -669,12 +854,12 @@ const Sidebar = () => {
         </Tooltip>
       </TooltipProvider>
     </div>
-  );
+  ), []);
 
   return (
     <>
       <aside
-        className={`bg-card/60 backdrop-blur-md rounded-3xl overflow-hidden flex flex-col transition-all duration-300 h-full ${
+        className={`backdrop-blur-md bg-white rounded-3xl overflow-hidden flex flex-col h-full ${
           isSidebarCollapsed ? "w-16" : "w-[400px]"
         } flex-shrink-0 shadow-lg z-10 border-[1.5px]`}
       >
@@ -683,21 +868,19 @@ const Sidebar = () => {
           <Button
             size="icon"
             variant="ghost"
-            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            className="p-2 hover:bg-primary/10 rounded-full transition-all"
+            onClick={toggleSidebar}
+            className="p-2 hover:bg-primary/10 rounded-full"
           >
             {isSidebarCollapsed ? (
-              <ArrowRight01Icon className="h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
+              <ArrowRight01Icon className="h-5 w-5 text-primary" />
             ) : (
-              <Cancel01Icon className="h-5 w-5 text-primary group-hover:rotate-90 transition-transform" />
+              <Cancel01Icon className="h-5 w-5 text-primary" />
             )}
           </Button>
         </div>
 
-        {/* Render appropriate sidebar based on state */}
-        {isSidebarCollapsed
-          ? renderCollapsedSidebar()
-          : renderSidebarExpandedContent()}
+        {/* Render appropriate sidebar content based on state */}
+        {isSidebarCollapsed ? collapsedSidebarContent : sidebarExpandedContent}
       </aside>
 
       {/* Template modal */}
@@ -711,11 +894,7 @@ const Sidebar = () => {
             templates={templates}
             selectedCategory={selectedCategory}
             setSelectedCategory={setSelectedCategory}
-            setActiveTemplate={(template) => {
-              setActiveTemplate(template);
-              setSelectedTemplateUrl([template.imageUrl]); // Set as array with single element
-              setShowTemplateModal(false);
-            }}
+            setActiveTemplate={handleTemplateModalSelection}
             loading={loadingTemplates}
           />,
           document.body
@@ -724,4 +903,5 @@ const Sidebar = () => {
   );
 };
 
-export default Sidebar;
+// Memoize the entire component to prevent unnecessary re-renders
+export default memo(Sidebar);

@@ -154,7 +154,7 @@ const SubscriptionDialog = () => {
       });
       return response.data;
     },
-    onSuccess: (data: {url:string}) => {
+    onSuccess: (data: { url: string }) => {
       window.location.href = data.url;
     },
     onError: (error) => {
@@ -181,7 +181,7 @@ const SubscriptionDialog = () => {
           <div className="absolute -top-[40%] -right-[10%] w-[80%] h-[80%] rounded-full bg-primary/5 blur-[100px] animate-float-slow"></div>
           <div className="absolute -bottom-[30%] -left-[10%] w-[60%] h-[60%] rounded-full bg-secondary/5 blur-[120px] animate-float-reverse"></div>
         </div>
-        
+
         <div className="text-center space-y-4 mb-12 relative z-10">
           <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
             Your subscription has expired
@@ -217,44 +217,53 @@ const PricingSection: React.FC<PricingSectionProps> = ({
 }) => {
   const pricingData = [
     {
-      price: "3.99",
+      price: "9.99",
       planName: "Starter",
       description:
-        "Get started for just $3.99! Perfect for occasional LinkedIn users needing message help. Up to 200 messages.",
+        "Perfect for individuals creating occasional marketing content. Generate high-quality AI images.",
       icon: <Flame className={`w-7 h-7`} />,
       features: [
-        "200 messages per month",
-        "Generate new responses",
-        "Refine draft messages",
-        "24/7 customer support",
+        "150 image generations per month",
+        "Access to 100+ ad templates",
+        "AI image customization tools",
+        "All image sizes (1:1, 2:3, 3:2)",
+        "Export as PNG, JPG, WEBP",
+        "Image history & checkpoint restore",
+        "Standard customer support",
       ],
       isPopular: false,
     },
     {
-      price: "7.99",
+      price: "19.99",
       planName: "Growth",
       description:
-        "Our most popular plan offering great value! Ideal for daily LinkedIn engagement. Up to 750 messages.",
+        "Our most popular plan! Ideal for regular content creators needing more generations and faster support.",
       icon: <Zap className={`w-7 h-7`} />,
       features: [
-        "750 messages per month",
-        "Generate new responses",
-        "Refine draft messages",
-        "24/7 customer support",
+        "400 image generations per month",
+        "Access to 100+ ad templates",
+        "AI image customization tools",
+        "All image sizes (1:1, 2:3, 3:2)",
+        "Export as PNG, JPG, WEBP",
+        "Image history & checkpoint restore",
+        "Priority customer support",
       ],
       isPopular: true,
     },
     {
-      price: "12.99",
+      price: "39.99",
       planName: "Pro",
       description:
-        "Unlock unlimited potential! For serious LinkedIn networkers who demand the best. Truly unlimited messages.",
+        "Maximum power for professional creators. More generations for high-volume content needs.",
       icon: <Diamond className={`w-7 h-7`} />,
       features: [
-        "Unlimited messages per month",
-        "Generate new responses",
-        "Refine draft messages",
-        "24/7 customer support",
+        "1000 image generations per month",
+        "Access to 100+ ad templates",
+        "AI image customization tools",
+        "All image sizes (1:1, 2:3, 3:2)",
+        "Export as PNG, JPG, WEBP",
+        "Image history & checkpoint restore",
+        "Dedicated support manager",
       ],
       isPopular: false,
     },

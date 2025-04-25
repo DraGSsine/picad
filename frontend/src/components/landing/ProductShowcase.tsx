@@ -14,15 +14,15 @@ const productShowcases = [
   },
   {
     beforeImage: "/showcase/product-2-before.jpeg",
-    afterImage: "/showcase/product-2-after.webpasp"
+    afterImage: "/showcase/product-2-after.webp"
   },
   {
-    beforeImage: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=800&auto=format&fit=crop&q=80",
-    afterImage: "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=800&auto=format&fit=crop&q=80"
+    beforeImage: "/showcase/prodcut-3-before.jpg",
+    afterImage: "/showcase/prodcut-3-after.png"
   },
   {
-    beforeImage: "https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=800&auto=format&fit=crop&q=80",
-    afterImage: "https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb?w=800&auto=format&fit=crop&q=80"
+    beforeImage: "/showcase/product-4-before.jpg",
+    afterImage: "/showcase/product-4-after.png"
   }
 ];
 

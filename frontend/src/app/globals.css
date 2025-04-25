@@ -50,8 +50,8 @@
     --muted-foreground: 0 0% 40%; /* Slightly darker Medium Gray */
     
     /* Accent: Richer Peach */
-    --accent: 28 90% 75%;        /* Richer Peach */
-    --accent-foreground: 28 50% 25%; /* Darker Peach/Brown */
+    --accent: 60 4.8% 95.9%;
+    --accent-foreground: 24 9.8% 10%;
     
     --destructive: 0 70% 55%;      /* Slightly darker Red */
     --destructive-foreground: 0 0% 100%; /* White */

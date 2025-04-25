@@ -6,8 +6,8 @@ const HowItWorks = () => {
   const steps = [
     {
       step: 1,
-      title: "Upload Your Product Photo",
-      description: "Simply drag & drop your product image and watch as our AI generates stunning ad variations instantly.",
+      title: "Upload Your Product Image",
+      description: "Simply upload your product photo. Our AI analyzes your product to understand its key features and prepare it for ad creation.",
       icon: "/images/upload-icon.svg",
       image: "/images/upload-product.webp",
       accentColor: "bg-primary/10", 
@@ -15,8 +15,8 @@ const HowItWorks = () => {
     },
     {
       step: 2,
-      title: "Add Text & Customize",
-      description: "Add your headlines and customize the layout. Our AI intelligently adapts the design to fit your text beautifully.",
+      title: "Choose a Template & Settings",
+      description: "Select from 100+ professional ad templates, then choose your preferred size ratio (1:1, 2:3, 3:2) and quality level.",
       icon: "/images/text-icon.svg",
       image: "/images/add-text.webp", 
       accentColor: "bg-secondary/20",
@@ -24,8 +24,8 @@ const HowItWorks = () => {
     },
     {
       step: 3,
-      title: "Fine-tune with AI Brush",
-      description: "Use our magic brush to remove objects or add new elements with simple text prompts—no design skills needed.",
+      title: "Enter Description & Generate",
+      description: "Describe how you want your ad to look, and our AI will instantly generate a professional ad combining your product, template, and vision.",
       icon: "/images/magic-icon.svg",
       image: "/images/ai-brush.webp",
       accentColor: "bg-accent/20",
@@ -40,10 +40,10 @@ const HowItWorks = () => {
         <div className="text-center mb-20 max-w-3xl mx-auto">
           <div className="inline-flex items-center px-5 py-2 bg-white/80 text-foreground font-semibold text-sm rounded-full mb-6 animate-fade-in shadow-sm border border-secondary/30">
             <SparklesIcon className="mr-2 h-4 w-4 text-primary" />
-            <span>Effortless Workflow</span>
+            <span>Simple Workflow</span>
           </div>
           <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground animate-fade-in tracking-tight">
-            Create Professional Ads in <span className="relative">
+            Create Amazing Ads in <span className="relative">
               <span className="relative z-10 bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
                 3 Simple Steps
               </span>
@@ -51,7 +51,7 @@ const HowItWorks = () => {
             </span>
           </h2>
           <p className="text-lg md:text-xl text-foreground/90 max-w-2xl mx-auto leading-relaxed animate-fade-in">
-            Our intuitive AI-powered platform simplifies ad creation from upload to finished design—all in minutes, not hours.
+            Our AI-powered platform transforms your product images into stunning, professional ads in seconds—no design skills required.
           </p>
         </div>
         
@@ -88,13 +88,13 @@ const HowItWorks = () => {
                         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-secondary/60 to-accent/40 flex items-center justify-center shadow-sm mr-3">
                           <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-primary to-primary/80"></div>
                         </div>
-                        <span className="text-foreground/90">Supports JPG, PNG & WEBP files</span>
+                        <span className="text-foreground/90">Upload up to 4 product images</span>
                       </li>
                       <li className="flex items-center text-foreground">
                         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-secondary/60 to-accent/40 flex items-center justify-center shadow-sm mr-3">
                           <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-primary to-primary/80"></div>
                         </div>
-                        <span className="text-foreground/90">Multiple ad variations in seconds</span>
+                        <span className="text-foreground/90">Supports PNG, JPG & WEBP formats</span>
                       </li>
                     </>
                   )}
@@ -105,13 +105,13 @@ const HowItWorks = () => {
                         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-secondary/60 to-accent/40 flex items-center justify-center shadow-sm mr-3">
                           <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-primary to-primary/80"></div>
                         </div>
-                        <span className="text-foreground/90">Professionally designed text layouts</span>
+                        <span className="text-foreground/90">100+ professional ad templates</span>
                       </li>
                       <li className="flex items-center text-foreground">
                         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-secondary/60 to-accent/40 flex items-center justify-center shadow-sm mr-3">
                           <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-primary to-primary/80"></div>
                         </div>
-                        <span className="text-foreground/90">Customizable fonts & colors</span>
+                        <span className="text-foreground/90">Customize image size and quality</span>
                       </li>
                     </>
                   )}
@@ -122,13 +122,13 @@ const HowItWorks = () => {
                         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-secondary/60 to-accent/40 flex items-center justify-center shadow-sm mr-3">
                           <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-primary to-primary/80"></div>
                         </div>
-                        <span className="text-foreground/90">Remove unwanted objects seamlessly</span>
+                        <span className="text-foreground/90">AI interprets your text description</span>
                       </li>
                       <li className="flex items-center text-foreground">
                         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-secondary/60 to-accent/40 flex items-center justify-center shadow-sm mr-3">
                           <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-primary to-primary/80"></div>
                         </div>
-                        <span className="text-foreground/90">Add new elements with text prompts</span>
+                        <span className="text-foreground/90">Save to history for easy editing</span>
                       </li>
                     </>
                   )}

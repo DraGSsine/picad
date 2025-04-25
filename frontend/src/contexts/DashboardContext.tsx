@@ -1,83 +1,136 @@
 "use client";
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode, useMemo, useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
 import { HistoryItem } from "@/types/history";
 import { toast } from "@/hooks/use-toast";
 
-interface DashboardContextType {
-  // Image state
+// Split context into smaller, more focused contexts
+interface ImageContextType {
   currentImage: string | null;
   setCurrentImage: (image: string | null) => void;
-  
-  // Canvas reference
-  canvasRef: React.MutableRefObject<HTMLCanvasElement | null> | null;
-  setCanvasRef: (ref: React.MutableRefObject<HTMLCanvasElement | null>) => void;
-  
-  // Image size (replacing aspect ratio)
   currentImageSize: string;
   setCurrentImageSize: (imageSize: string) => void;
-  
-  // Edit mode
+  getCanvasImage: () => string | null;
+}
+
+interface CanvasContextType {
+  canvasRef: React.MutableRefObject<HTMLCanvasElement | null> | null;
+  setCanvasRef: (ref: React.MutableRefObject<HTMLCanvasElement | null>) => void;
   editMode: "none" | "draw" | "text";
   setEditMode: (mode: "none" | "draw" | "text") => void;
-  
-  // Prompt state
+  handleToolClick: (mode: "none" | "draw" | "text") => void;
+}
+
+interface PromptContextType {
   prompt: string;
   setPrompt: (prompt: string) => void;
-  
-  // History state
-  history: HistoryItem[];
-  setHistory: (history: HistoryItem[]) => void;
-  
-  // Generation and edit loading states
   isGenerating: boolean;
   isEditing: boolean;
   isPending: boolean;
   generateImage: () => void;
-  
-  // Tools
-  handleToolClick: (mode: "none" | "draw" | "text") => void;
-  
-  // Get canvas image with edits
-  getCanvasImage: () => string | null;
 }
 
+interface HistoryContextType {
+  history: HistoryItem[];
+  setHistory: (history: HistoryItem[]) => void;
+}
+
+// Combined context for backward compatibility
+interface DashboardContextType extends ImageContextType, CanvasContextType, PromptContextType, HistoryContextType {}
+
+// Create each context
+const ImageContext = createContext<ImageContextType | undefined>(undefined);
+const CanvasContext = createContext<CanvasContextType | undefined>(undefined);
+const PromptContext = createContext<PromptContextType | undefined>(undefined);
+const HistoryContext = createContext<HistoryContextType | undefined>(undefined);
 const DashboardContext = createContext<DashboardContextType | undefined>(undefined);
 
-export const useDashboard = () => {
-  const context = useContext(DashboardContext);
-  if (!context) {
-    throw new Error("useDashboard must be used within a DashboardProvider");
-  }
+// Custom hooks for each context
+export const useImageContext = () => {
+  const context = useContext(ImageContext);
+  if (!context) throw new Error("useImageContext must be used within ImageProvider");
   return context;
 };
 
-export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [currentImage, setCurrentImage] = useState<string | null>(null);
-  const [canvasRef, setCanvasRef] = useState<React.MutableRefObject<HTMLCanvasElement | null> | null>(null);
-  const [currentImageSize, setCurrentImageSize] = useState<string>("1024x1024"); // Default to a square image
-  const [prompt, setPrompt] = useState("");
-  const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [editMode, setEditMode] = useState<"none" | "draw" | "text">("none");
+export const useCanvasContext = () => {
+  const context = useContext(CanvasContext);
+  if (!context) throw new Error("useCanvasContext must be used within CanvasProvider");
+  return context;
+};
 
-  // Add separate loading state for each operation
+export const usePromptContext = () => {
+  const context = useContext(PromptContext);
+  if (!context) throw new Error("usePromptContext must be used within PromptProvider");
+  return context;
+};
+
+export const useHistoryContext = () => {
+  const context = useContext(HistoryContext);
+  if (!context) throw new Error("useHistoryContext must be used within HistoryProvider");
+  return context;
+};
+
+// For backward compatibility
+export const useDashboard = () => {
+  const context = useContext(DashboardContext);
+  if (!context) throw new Error("useDashboard must be used within a DashboardProvider");
+  return context;
+};
+
+// Local storage helpers
+const saveHistoryToLocalStorage = (history: HistoryItem[]) => {
+  try {
+    localStorage.setItem('generationHistory', JSON.stringify(history));
+    window.dispatchEvent(new Event('historyUpdated'));
+  } catch (error) {
+    console.error("Failed to save history to localStorage:", error);
+  }
+};
+
+export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  // Image state
+  const [currentImage, setCurrentImage] = useState<string | null>(null);
+  const [currentImageSize, setCurrentImageSize] = useState<string>("1024x1024");
+  
+  // Canvas state
+  const [canvasRef, setCanvasRef] = useState<React.MutableRefObject<HTMLCanvasElement | null> | null>(null);
+  const [editMode, setEditMode] = useState<"none" | "draw" | "text">("none");
+  
+  // Prompt state
+  const [prompt, setPrompt] = useState("");
+  
+  // History state with lazy initial state
+  const [history, setHistory] = useState<HistoryItem[]>(() => {
+    // Lazy load from localStorage only on initial mount
+    if (typeof window !== 'undefined') {
+      try {
+        const storedHistory = localStorage.getItem('generationHistory');
+        if (storedHistory) return JSON.parse(storedHistory);
+      } catch (error) {
+        console.error("Failed to load history from localStorage:", error);
+      }
+    }
+    return [];
+  });
+  
+  // Loading states
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  // Function to get the current canvas image with all edits
-  const getCanvasImage = (): string | null => {
+  // Memoized functions to prevent unnecessary re-renders
+  const getCanvasImage = useCallback((): string | null => {
     if (!canvasRef?.current) return currentImage;
     
     try {
-      // Get the canvas data URL (includes all edits)
       return canvasRef.current.toDataURL('image/png');
     } catch (error) {
       console.error("Error getting canvas image:", error);
       return currentImage;
     }
-  };
+  }, [canvasRef, currentImage]);
 
+  // API mutations with useCallback to prevent unnecessary recreation
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
       const adCreatorData = JSON.parse(
@@ -92,43 +145,28 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
     onSuccess: (data) => {
       if (data.imageData) {
         const imageUrl = `data:image/png;base64,${data.imageData}`;
-        try {
-          // Set the current image
-          setCurrentImage(imageUrl);
-          
-          // Update image size if provided by the API
-          if (data.imageSize) {
-            setCurrentImageSize(data.imageSize);
-          }
-
-          // Add to history with image size
-          setHistory((prev) => {
-            const newHistory = [
-              ...prev,
-              {
-                id: Date.now().toString(),
-                imageUrl: imageUrl,
-                prompt,
-                timestamp: new Date(),
-                imageSize: data.imageSize || currentImageSize,
-              },
-            ];
-            
-            // Store in localStorage
-            try {
-              localStorage.setItem('generationHistory', JSON.stringify(newHistory));
-              window.dispatchEvent(new Event('historyUpdated'));
-            } catch (error) {
-              console.error("Failed to save history to localStorage:", error);
-            }
-            
-            return newHistory;
-          });
-        } catch (error) {
-          console.error("Error processing image data:", error);
+        
+        // Update state
+        setCurrentImage(imageUrl);
+        
+        if (data.imageSize) {
+          setCurrentImageSize(data.imageSize);
         }
-      } else {
-        console.error("No image data received from API");
+
+        // Update history
+        const newHistoryItem = {
+          id: Date.now().toString(),
+          imageUrl: imageUrl,
+          prompt,
+          timestamp: new Date(),
+          imageSize: data.imageSize || currentImageSize,
+        };
+        
+        setHistory(prev => {
+          const newHistory = [...prev, newHistoryItem];
+          saveHistoryToLocalStorage(newHistory);
+          return newHistory;
+        });
       }
 
       setPrompt("");
@@ -150,68 +188,48 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
         localStorage.getItem("adCreatorData") || "{}"
       );
       
-      // Get the current canvas image (including all edits)
       const editedImage = getCanvasImage();
       
       if (!editedImage) {
         throw new Error("No image to edit");
       }
       
-      // Extract base64 data from data URL (remove the "data:image/png;base64," prefix)
       const base64Data = editedImage.split(',')[1];
       
       const response = await api.post("/ai/edit", {
         prompt,
         adCreatorData,
-        currentImage: base64Data, // Send just the base64 data
+        currentImage: base64Data,
       });
       return response.data;
     },
     onSuccess: (data) => {
       if (data.imageData) {
         const imageUrl = `data:image/png;base64,${data.imageData}`;
-        try {
-          // Set the current image
-          setCurrentImage(imageUrl);
-          
-          // Update image size if provided by the API
-          if (data.imageSize) {
-            setCurrentImageSize(data.imageSize);
-          }
-
-          // Add to history with image size
-          setHistory((prev) => {
-            const newHistory = [
-              ...prev,
-              {
-                id: Date.now().toString(),
-                imageUrl: imageUrl,
-                prompt,
-                timestamp: new Date(),
-                imageSize: data.imageSize || currentImageSize,
-              },
-            ];
-            
-            // Store in localStorage
-            try {
-              localStorage.setItem('generationHistory', JSON.stringify(newHistory));
-              window.dispatchEvent(new Event('historyUpdated'));
-            } catch (error) {
-              console.error("Failed to save history to localStorage:", error);
-            }
-            
-            return newHistory;
-          });
-        } catch (error) {
-          console.error("Error processing image data:", error);
+        
+        setCurrentImage(imageUrl);
+        
+        if (data.imageSize) {
+          setCurrentImageSize(data.imageSize);
         }
-      } else {
-        console.error("No image data received from API");
+
+        const newHistoryItem = {
+          id: Date.now().toString(),
+          imageUrl: imageUrl,
+          prompt,
+          timestamp: new Date(),
+          imageSize: data.imageSize || currentImageSize,
+        };
+        
+        setHistory(prev => {
+          const newHistory = [...prev, newHistoryItem];
+          saveHistoryToLocalStorage(newHistory);
+          return newHistory;
+        });
       }
 
       setPrompt("");
       setIsEditing(false);
-      // Reset edit mode after successful edit
       setEditMode("none");
     },
     onError: (error) => {
@@ -224,49 +242,73 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
     },
   });
 
-  // Generate or edit image based on whether we have a current image
-  const generateImage = () => {
+  // Callbacks for actions to prevent unnecessary re-renders
+  const generateImage = useCallback(() => {
     if (prompt?.trim()) {
       if (currentImage) {
-        // If we have a current image, we're in edit mode - call the edit endpoint
         setIsEditing(true);
         editMutate();
       } else {
-        // Otherwise, we're generating a new image - call the generate endpoint
         setIsGenerating(true);
         mutate();
       }
     }
-  };
+  }, [prompt, currentImage, editMutate, mutate]);
 
-  const handleToolClick = (mode: "none" | "draw" | "text") => {
+  const handleToolClick = useCallback((mode: "none" | "draw" | "text") => {
     setEditMode(mode);
-  };
+  }, []);
 
-  const value = {
+  // Memoize context values to prevent unnecessary re-renders
+  const imageContextValue = useMemo(() => ({
     currentImage,
     setCurrentImage,
-    canvasRef,
-    setCanvasRef,
     currentImageSize,
     setCurrentImageSize,
+    getCanvasImage
+  }), [currentImage, currentImageSize, getCanvasImage]);
+
+  const canvasContextValue = useMemo(() => ({
+    canvasRef,
+    setCanvasRef,
     editMode,
     setEditMode,
+    handleToolClick
+  }), [canvasRef, editMode, handleToolClick]);
+
+  const promptContextValue = useMemo(() => ({
     prompt,
     setPrompt,
-    history,
-    setHistory,
     isGenerating,
     isEditing,
     isPending,
-    generateImage,
-    handleToolClick,
-    getCanvasImage,
-  };
+    generateImage
+  }), [prompt, isGenerating, isEditing, isPending, generateImage]);
+
+  const historyContextValue = useMemo(() => ({
+    history,
+    setHistory
+  }), [history]);
+
+  // Combined context for backward compatibility
+  const dashboardContextValue = useMemo(() => ({
+    ...imageContextValue,
+    ...canvasContextValue,
+    ...promptContextValue,
+    ...historyContextValue
+  }), [imageContextValue, canvasContextValue, promptContextValue, historyContextValue]);
 
   return (
-    <DashboardContext.Provider value={value}>
-      {children}
-    </DashboardContext.Provider>
+    <ImageContext.Provider value={imageContextValue}>
+      <CanvasContext.Provider value={canvasContextValue}>
+        <PromptContext.Provider value={promptContextValue}>
+          <HistoryContext.Provider value={historyContextValue}>
+            <DashboardContext.Provider value={dashboardContextValue}>
+              {children}
+            </DashboardContext.Provider>
+          </HistoryContext.Provider>
+        </PromptContext.Provider>
+      </CanvasContext.Provider>
+    </ImageContext.Provider>
   );
 };

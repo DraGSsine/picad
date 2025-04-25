@@ -87,25 +87,31 @@ export class AiService {
         images.push(file);
       }
 
-      // Process template image if present
-      if (
-        adCreatorData.selectedTemplateUrl &&
-        adCreatorData.selectedTemplateUrl.length > 0
-      ) {
-        const templatePath = path.join(
-          process.cwd(),
-          'public',
-          'adsTemplates',
-          adCreatorData.selectedTemplateUrl[0].split('/').pop()!,
-        );
-        const templateFile = await toFile(
-          fs.createReadStream(templatePath),
-          'template.jpg',
-          {
-            type: 'image/jpeg',
-          },
-        );
-        images.push(templateFile);
+      // Process template images from selectedTemplateUrl
+      for (const templateUrl of adCreatorData.selectedTemplateUrl) {
+        if (templateUrl.startsWith('http')) {
+          const imageName = templateUrl.split('/').pop();
+          const imagePath = path.join(process.cwd(), 'public', 'adsTemplates', imageName!);
+
+          if (fs.existsSync(imagePath)) {
+            const imageBuffer = fs.readFileSync(imagePath);
+            const base64Image = imageBuffer.toString('base64');
+            const buffer = Buffer.from(base64Image, 'base64');
+            const file = await toFile(buffer, imageName!, { type: 'image/png' });
+            images.push(file);
+          } else {
+            throw new BadRequestException(`Image not found: ${imagePath}`);
+          }
+        } else {
+          // Handle base64 template directly
+          let base64Content = templateUrl;
+          if (base64Content.includes(',')) {
+            base64Content = base64Content.split(',')[1];
+          }
+          const buffer = Buffer.from(base64Content, 'base64');
+          const file = await toFile(buffer, 'template.png', { type: 'image/png' });
+          images.push(file);
+        }
       }
 
       // Call OpenAI API for image editing
@@ -115,7 +121,7 @@ export class AiService {
         image: images,
         prompt: generatedPrompt,
         size: size,
-        quality: 'low',
+        quality: 'high',
       });
 
       // Return the image data directly
@@ -148,19 +154,48 @@ export class AiService {
   ): Promise<string> {
     try {
       // Create an array to hold messages with all uploaded images
-      const creativity = adCreatorData.settings?.creativityLevel ?? 50;
-      const detail = adCreatorData.settings?.detailLevel ?? 50;
+      const creativityLevel = adCreatorData.settings?.creativityLevel ?? 50;
+      const detailLevel = adCreatorData.settings?.detailLevel ?? 50;
       const promptText = `
-        Given the following user prompt: "${prompt}", product images (provided first), and an ad template image (provided last), generate a single, concise prompt for an AI image editor to seamlessly insert the main product(s) into the template.
-        - Creativity: ${creativity}%
-        - Detail: ${detail}%
-        Instructions:
-        - Carefully analyze both the product image(s) and the template image. Describe all relevant visual details, such as lighting, perspective, shadows, colors, background, and any text or branding present.
-        - Ensure the product(s) are integrated in a way that matches the template's style and context.
-        - Do NOT alter, modify, or obscure any original features of the product(s), including but not limited to: logos, symbols, text, font, size, proportions, or distinctive markings. The product(s) must remain exactly as shown.
-        - Adjust only the background and template elements as needed to fit the product(s) naturally.
-        - Provide clear, direct instructions for realistic, visually appealing integration, mentioning all key aspects of how the final image should look.
-        `;
+      
+Generate a detailed, actionable prompt for an AI image editor based on the user's prompt, provided images, and control parameters.
+
+**User's Original Request:** "${prompt}"
+
+**Control Parameters:**
+- Creativity Level: ${creativityLevel}% (0=minimal changes to template, 100=explore new creative ideas)
+- Detail Level: ${detailLevel}% (0=basic clean rendering, 100=high detail with textures, fine grain elements, etc.)
+
+**Inputs Analysis:**
+1. **Product Image(s):** The first image(s) provided contain the user's product. These must remain unaltered.
+2. **Ad Template Image:** The last image provided is the ad layout/template where product(s) should be inserted.
+
+**Core Objective:**
+Replace template placeholders with the user's product(s) while addressing the user's specific request: "${prompt}"
+
+**Integration Instructions:**
+1. Place the user's product(s) in the template with ZERO ALTERATIONS to the product itself.
+2. Adapt the template's visual elements based on Creativity Level (${creativityLevel}%):
+   - Low creativity: Minimal changes to template's design
+   - High creativity: Transform colors/mood to create a cohesive design inspired by the product
+
+**Realism Instructions:**
+- If humans appear in the ad, render them with photorealistic detail and natural expressions
+- All people should have realistic skin texture, natural proportions, and appropriate lighting
+- All text should be perfectly legible and contextually relevant
+- Shadows, reflections, and lighting must be physically accurate
+
+**Detail Implementation (${detailLevel}%):**
+- Low detail: Clean, simple rendering with basic lighting
+- High detail: Include fine textures, subtle shadows, material properties, micro-details, and environmental effects
+- At maximum detail: Add appropriate surface imperfections, grain textures, and high-resolution elements
+
+**Final Output Requirements:**
+- Honor the user's original request ("${prompt}") as the primary directive
+- Maintain the composition structure of the original template
+- Ensure all text is grammatically correct and professionally written
+- Generate an advertisement that looks professionally designed and ready for publication
+      `;
 
       const messages: any = [
         {
@@ -184,23 +219,35 @@ export class AiService {
         });
       }
 
-      // Get the template image and convert to base64
+      // Add the template image - it's already base64 from the frontend
       try {
-        // The template URL is on the server, get the full path
-        const templatePath = path.join(
-          process.cwd(),
-          'public',
-          'adsTemplates',
-          adCreatorData.selectedTemplateUrl[0].split('/').pop()!,
-        );
-        const templateBase64 = fs.readFileSync(templatePath).toString('base64');
+        for (const templateUrl of adCreatorData.selectedTemplateUrl) {
+          if (templateUrl.startsWith('http')) {
+            const imageName = templateUrl.split('/').pop();
+            const imagePath = path.join(process.cwd(), 'public', 'adsTemplates', imageName!);
 
-        messages[0].content.push({
-          type: 'image_url',
-          image_url: {
-            url: `data:image/jpeg;base64,${templateBase64}`,
-          },
-        });
+            if (fs.existsSync(imagePath)) {
+              const imageBuffer = fs.readFileSync(imagePath);
+              const base64Image = imageBuffer.toString('base64');
+              messages[0].content.push({
+                type: 'image_url',
+                image_url: {
+                  url: `data:image/png;base64,${base64Image}`,
+                },
+              });
+            } else {
+              throw new BadRequestException(`Image not found: ${imagePath}`);
+            }
+          } else {
+            const templateBase64 = templateUrl;
+            messages[0].content.push({
+              type: 'image_url',
+              image_url: {
+                url: templateBase64, // Already in base64 format from frontend
+              },
+            });
+          }
+        }
       } catch (err) {
         this.logger.error(`Failed to process template image: ${err.message}`);
         throw new BadRequestException(
@@ -307,21 +354,32 @@ export class AiService {
         images.push(file);
       }
 
-      // Process template image
-      const templatePath = path.join(
-        process.cwd(),
-        'public',
-        'adsTemplates',
-        adCreatorData.selectedTemplateUrl[0].split('/').pop()!,
-      );
-      const templateFile = await toFile(
-        fs.createReadStream(templatePath),
-        'template.jpg',
-        {
-          type: 'image/jpeg',
-        },
-      );
-      images.push(templateFile);
+      // Process template images from selectedTemplateUrl
+      for (const templateUrl of adCreatorData.selectedTemplateUrl) {
+        if (templateUrl.startsWith('http')) {
+          const imageName = templateUrl.split('/').pop();
+          const imagePath = path.join(process.cwd(), 'public', 'adsTemplates', imageName!);
+
+          if (fs.existsSync(imagePath)) {
+            const imageBuffer = fs.readFileSync(imagePath);
+            const base64Image = imageBuffer.toString('base64');
+            const buffer = Buffer.from(base64Image, 'base64');
+            const file = await toFile(buffer, imageName!, { type: 'image/png' });
+            images.push(file);
+          } else {
+            throw new BadRequestException(`Image not found: ${imagePath}`);
+          }
+        } else {
+          // Handle base64 template directly
+          let base64Content = templateUrl;
+          if (base64Content.includes(',')) {
+            base64Content = base64Content.split(',')[1];
+          }
+          const buffer = Buffer.from(base64Content, 'base64');
+          const file = await toFile(buffer, 'template.png', { type: 'image/png' });
+          images.push(file);
+        }
+      }
 
       // Call OpenAI API for image editing
       const response = await this.openai.images.edit({
@@ -329,7 +387,7 @@ export class AiService {
         image: images,
         prompt: prompt,
         size: size,
-        quality: 'low',
+        quality: "high",
       });
 
       return response.data[0].b64_json;

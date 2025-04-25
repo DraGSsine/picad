@@ -1,18 +1,21 @@
-import React, { ReactNode } from "react";
-import PricingDialog from "@/components/dashboard/pricing-dialog";
-import Sidebar from "@/components/dashboard/sidebar";
+import React, { ReactNode, Suspense } from "react";
+import LoadingSpinner from "@/components/ui/loading-spinner";
+
+// Simple imports instead of dynamic imports
 import NavBar from "@/components/dashboard/NavBar";
-import { DashboardProvider } from "@/contexts/DashboardContext";
+import DashboardProvider from "@/components/contexts/DashboardProvider";
+import Sidebar from "@/components/dashboard/sidebar";
 import RightSidebar from "@/components/dashboard/rightSidebar";
+import PricingDialog from "@/components/dashboard/pricing-dialog";
+
 
 const Layout = ({ children }: { children: ReactNode }) => {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-background/95 to-background">
-      {/* Decorative background elements */}
+    <div className="relative min-h-screen bg-background">
+      {/* Simplified background - removing heavy animations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-[40%] -right-[10%] w-[80%] h-[80%] rounded-full bg-primary/5 blur-[100px] animate-float-slow"></div>
-        <div className="absolute -bottom-[30%] -left-[10%] w-[60%] h-[60%] rounded-full bg-secondary/5 blur-[120px] animate-float-reverse"></div>
-        <div className="absolute top-[10%] left-[20%] w-[40%] h-[40%] rounded-full bg-accent/5 blur-[80px] animate-glow-slow"></div>
+        <div className="absolute -top-[40%] -right-[10%] w-[80%] h-[80%] rounded-full bg-primary/5 blur-[100px]"></div>
+        <div className="absolute -bottom-[30%] -left-[10%] w-[60%] h-[60%] rounded-full bg-secondary/5 blur-[120px]"></div>
       </div>
 
       {/* Content */}
@@ -20,11 +23,11 @@ const Layout = ({ children }: { children: ReactNode }) => {
         <NavBar />
 
         <main className="flex h-[89vh] gap-4 py-6 overflow-hidden">
-          <DashboardProvider>
-            <Sidebar />
-            {children}
-            <RightSidebar />
-          </DashboardProvider>
+            <DashboardProvider>
+              <Sidebar />
+              {children}
+              <RightSidebar />
+            </DashboardProvider>
         </main>
 
         <PricingDialog />

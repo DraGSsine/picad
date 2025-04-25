@@ -9,28 +9,28 @@ const FAQ = () => {
   
   const faqData = [
     {
-      question: "What kind of images work best with Picad?",
-      answer: "Picad works best with high-quality product photos on clean backgrounds, but our AI is designed to enhance almost any product image. For optimal results, we recommend images that are at least 1000px by 1000px, with good lighting and minimal background distractions."
+      question: "How does the ad generation process work?",
+      answer: "Our AI-powered platform works in three simple steps: First, you upload your product image. Next, you choose from our 100+ professional ad templates and customize your settings (image size, quality). Finally, you enter a description of the ad you want to create, and our AI combines everything to instantly generate a professional ad featuring your product."
     },
     {
-      question: "How long does it take to create an ad?",
-      answer: "Most ads are generated within seconds! Our AI technology works instantly to transform your product photos into professional advertisements. The entire process from upload to finished ad typically takes less than a minute, though you can spend additional time refining your creation if you wish."
+      question: "What types of product images work best?",
+      answer: "We accept product images in PNG, JPG, and WEBP formats (up to 5MB each). For best results, use clear, well-lit photos with minimal background distractions. You can upload up to 4 product images to give our AI a better understanding of your product from different angles."
     },
     {
-      question: "Can I customize the generated ads?",
-      answer: "Absolutely! You have complete control over customization. After the AI generates your initial ad designs, you can modify text content, adjust colors, change fonts, reposition elements, and even use our AI brush to remove or add objects. Each template also offers various style options to match your brand identity."
+      question: "How do I use the templates?",
+      answer: "After uploading your product image, you can browse our template gallery with 100+ professional designs sorted by category. Simply select the template that best fits your needs, or upload your own custom template. The AI will incorporate your product into the selected template style while following your description."
     },
     {
-      question: "Do you offer templates for different platforms?",
-      answer: "Yes, we provide optimized templates for all major social media and advertising platforms including Instagram, Facebook, Google Ads, LinkedIn, Pinterest, and more. Each template is sized correctly for its intended platform and designed to maximize engagement and conversion rates."
+      question: "What should I write in my description?",
+      answer: "Your description helps our AI understand how you want your final ad to look. Be specific about the style, mood, colors, and any particular elements you want to include or emphasize. For example, instead of writing 'Show my product,' try 'Create a modern, minimalist ad with my product on a light blue background with emphasis on its ergonomic design.'"
     },
     {
-      question: "How much does Picad cost?",
-      answer: "Picad offers various subscription tiers to meet different needs and budgets. Our Starter plan begins at $29/month, while our Professional and Enterprise plans offer additional features and higher usage limits. We also offer a 7-day free trial so you can explore all of our features before committing."
+      question: "What image sizes and formats are supported?",
+      answer: "You can generate images in three aspect ratios: square (1:1), portrait (2:3), and landscape (3:2). We support multiple quality levels (Low, Medium, High) depending on your subscription plan. Generated images can be exported in PNG, JPG, or WEBP formats for use across different platforms and marketing channels."
     },
     {
-      question: "Is there a limit to how many ads I can create?",
-      answer: "Each subscription tier comes with different usage limits. Our Starter plan includes up to 50 ad generations per month, Professional increases this to 200, and Enterprise offers custom limits based on your needs. You'll receive notifications as you approach your limit, and can always upgrade your plan if needed."
+      question: "What is the checkpoint restore feature?",
+      answer: "Checkpoint restore is our image history system that saves all your generated ads. This allows you to revisit previous generations, track your creative process, and continue editing from any point in your history. You can view your entire creation history in the sidebar, making it easy to pick up where you left off or try new variations based on previous designs."
     },
   ];
   
@@ -56,7 +56,7 @@ const FAQ = () => {
             </span>
           </h2>
           <p className="text-lg md:text-xl text-foreground/90 max-w-2xl mx-auto leading-relaxed animate-fade-in">
-            Find answers to the most common questions about our platform, features, and subscription plans.
+            Find answers to common questions about our AI ad creation platform, features, and subscription plans.
           </p>
         </div>
         
@@ -95,7 +95,7 @@ const FAQ = () => {
         {/* Additional support section with gradient button matching the same style */}
         <div className="mt-16 text-center animate-fade-in" style={{ animationDelay: "0.5s" }}>
           <p className="text-foreground/90 mb-6">
-            Don&lsquo;t see your question? We&lsquo;re here to help!
+            Don&apos;t see your question? We&apos;re here to help!
           </p>
           <Button
             className="bg-gradient-to-r from-primary via-primary/90 to-primary text-primary-foreground hover:from-primary/90 hover:to-primary/80 font-semibold px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105 border border-primary/10"
