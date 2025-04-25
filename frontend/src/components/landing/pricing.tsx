@@ -42,7 +42,7 @@ const Pricing = () => {
       popular: true,
     },
     {
-      name: "Yearly Growth",
+      name: "Annual",
       description: "Same as monthly Growth plan but with two months free! Best value for your business.",
       price: 199.99,
       period: "year",
@@ -80,7 +80,7 @@ const Pricing = () => {
             </span>
           </h2>
           <p className="text-lg md:text-xl text-foreground/90 max-w-2xl mx-auto leading-relaxed animate-fade-in">
-            Select the plan that best suits your needs. All plans include a 7-day free trial.
+            Select the plan that best suits your needs. All plans include a 14-day money-back guarantee.
           </p>
         </div>
         
@@ -141,7 +141,7 @@ const Pricing = () => {
                 <Button
                   className="w-full bg-gradient-to-r from-primary to-primary/90 text-primary-foreground hover:from-primary/90 hover:to-primary/80 font-semibold px-8 py-6 rounded-full shadow-md hover:shadow-lg transition-all"
                 >
-                  Start Free Trial
+                  Get Started
                 </Button>
               </div>
             </div>

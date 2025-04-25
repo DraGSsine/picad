@@ -1,10 +1,9 @@
 "use client";
-import React, { useState } from 'react';
+import React from 'react';
 import { Cancel01Icon, PaintBoardIcon } from 'hugeicons-react';
 import Image from 'next/image';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { Input } from '../ui/input';
 
 // Import Template interface 
 interface Template {
@@ -35,13 +34,10 @@ const TemplateModal: React.FC<TemplateModalProps> = ({
   setActiveTemplate,
   loading = false, // Default to false
 }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-
   if (!isOpen) return null;
 
   const filteredTemplates = templates.filter(template => 
-    (selectedCategory === 'all' || template.category === selectedCategory) &&
-    (searchQuery === '' || template.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    (selectedCategory === 'all' || template.category === selectedCategory)
   );
 
   return (
@@ -55,32 +51,7 @@ const TemplateModal: React.FC<TemplateModalProps> = ({
         
         {/* Modal header */}
         <div className="relative z-10 p-5 md:p-6 border-b border-border/30 flex items-center justify-between bg-gradient-to-r from-primary/5 to-background">
-          <div className="flex-1 max-w-md relative group">
-            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors duration-300" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <Input
-              type="text"
-              placeholder="Search templates..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-10 py-2 border border-primary/20 rounded-full focus:ring-primary/30 focus:border-primary/30 bg-card/80 focus:bg-card/95 transition-all duration-300 placeholder-muted-foreground/70"
-            />
-            {searchQuery && (
-              <button 
-                onClick={() => setSearchQuery('')}
-                className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-primary transition-colors"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-              </button>
-            )}
-          </div>
-          
-          <h2 className="text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary mx-4 hidden md:block">
+          <h2 className="text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
             Template Gallery
           </h2>
           
@@ -125,7 +96,7 @@ const TemplateModal: React.FC<TemplateModalProps> = ({
             </div>
           </div>
           
-          {/* Templates grid with updated masonry layout */}
+          {/* Templates grid with Pinterest-style masonry layout */}
           <div className="flex-1 bg-card/50 backdrop-blur-sm rounded-2xl shadow-sm border border-primary/10 overflow-hidden flex flex-col">
             <div className="p-4 border-b border-border/20 flex justify-between items-center">
               <h3 className="text-sm font-medium text-foreground">
@@ -150,7 +121,7 @@ const TemplateModal: React.FC<TemplateModalProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
                 {filteredTemplates.length === 0 ? (
                   <div className="flex items-center justify-center h-full p-8 text-center">
                     <div className="max-w-sm space-y-4">
@@ -160,39 +131,30 @@ const TemplateModal: React.FC<TemplateModalProps> = ({
                         </svg>
                       </div>
                       <h3 className="text-lg font-medium text-foreground">No templates found</h3>
-                      <p className="text-sm text-muted-foreground">Try adjusting your search or category selection to find more templates.</p>
-                      {searchQuery && (
-                        <Button 
-                          onClick={() => setSearchQuery('')}
-                          variant="outline"
-                          className="border-primary/20 text-primary hover:bg-primary/5"
-                        >
-                          Clear Search
-                        </Button>
-                      )}
+                      <p className="text-sm text-muted-foreground">Try selecting a different category to find templates.</p>
                     </div>
                   </div>
                 ) : (
-                  <div className="p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                  <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-4 space-y-4">
                     {filteredTemplates.map((template) => (
                       <div 
                         key={template.id}
-                        className="group aspect-[9/16] rounded-xl overflow-hidden cursor-pointer border border-primary/10 hover:ring-2 hover:ring-primary/40 hover:border-transparent shadow-sm hover:shadow-md hover:shadow-primary/10 transition-all duration-300 transform hover:scale-[1.02] bg-card/30"
+                        className="break-inside-avoid group rounded-xl overflow-hidden cursor-pointer border border-primary/10 hover:ring-2 hover:ring-primary/40 hover:border-transparent shadow-sm hover:shadow-md hover:shadow-primary/10 transition-all duration-300 transform hover:scale-[1.02] bg-card/30 mb-4"
                         onClick={() => {
                           setActiveTemplate(template);
                           onClose();
                         }}
                       >
-                        <div className="relative h-full">
+                        <div className="relative">
                           {/* Subtle gradient overlay */}
                           <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 pointer-events-none"></div>
                           
                           <Image
                             src={template.imageUrl}
                             alt={template.name}
-                            fill
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                            className="object-cover transition-transform duration-500 group-hover:scale-110"
+                            width={300}
+                            height={500}
+                            className="w-full object-cover transition-transform duration-500 group-hover:scale-110"
                           />
                           
                           {/* Template info overlay */}

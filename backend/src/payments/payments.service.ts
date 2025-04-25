@@ -13,13 +13,13 @@ export class PaymentsService {
   private stripeClient: any;
   private plans = {
     Starter: this.configService.get<string>('STARTER_PRICE_ID')!,
-    Pro: this.configService.get<string>('PRO_PRICE_ID')!,
     Growth: this.configService.get<string>('GROWTH_PRICE_ID')!,
+    Annual: this.configService.get<string>('ANNUAL_PRICE_ID')!,
   };
   private monthlyCredits = {
-    Starter: 100,
-    Growth: 'unlimited',
-    Pro: 'unlimited',
+    Starter: 150,
+    Growth: 400,
+    Annual: 400,
   };
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
@@ -32,10 +32,13 @@ export class PaymentsService {
     this.stripeClient = new Stripe(key, { apiVersion: '2025-01-27.acacia' });
   }
 
-  async createCheckoutSession(plan: planType, userId: string, subscriptionType: 'monthly' | 'yearly') {
+  async createCheckoutSession(plan: planType, userId: string) {
     console.log(plan);
     console.log(this.plans);
     console.log(this.plans[plan]);
+    
+    const subscriptionType = plan === 'Annual' ? 'yearly' : 'monthly';
+    
     const session = await this.stripeClient.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [

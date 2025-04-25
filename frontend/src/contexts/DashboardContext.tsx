@@ -102,7 +102,7 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [editMode, setEditMode] = useState<"none" | "draw" | "text">("none");
   
   // Prompt state
-  const [prompt, setPrompt] = useState("");
+  const [prompt, setPrompt] = useState("Integrate my product into this template");
   
   // History state with lazy initial state
   const [history, setHistory] = useState<HistoryItem[]>(() => {

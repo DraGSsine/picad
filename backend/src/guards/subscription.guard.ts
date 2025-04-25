@@ -17,18 +17,17 @@ export class SubscriptionGuard implements CanActivate {
     const userPlan = user.plan;
     const userUsage = user.creditsUsed;
     const userMonthlyCredits = user.monthlyCredits;
-    const usageExceeded = userMonthlyCredits === 9999 ? false : userUsage >= userMonthlyCredits;
-    if (!userPlan)
-      throw new UnauthorizedException("You don't have a subscription plan please visit http://localhost:3000");
-    if (userPlan === 'none')
-      throw new UnauthorizedException('You do not have a subscription plan please visit http://localhost:3000');
-    if (userPlan === 'free' && usageExceeded) {
-      await this.userModel.findByIdAndUpdate(userId, { plan: 'none' });
-      throw new UnauthorizedException('Free plan limit reached please visit https://picad.space');
-    }
+    
+    // Special value 9999 represents unlimited credits
+    const unlimitedCredits = userMonthlyCredits === 9999;
+    const usageExceeded = !unlimitedCredits && userUsage >= userMonthlyCredits;
+    
+    if (!userPlan || userPlan === 'none')
+      throw new UnauthorizedException("You don't have an active subscription plan. Please visit our pricing page.");
+    
     if (userPlan === 'Starter' && usageExceeded) {
       await this.userModel.findByIdAndUpdate(userId, { plan: 'none' });
-      throw new UnauthorizedException('Starter plan limit reached please visit http://localhost:3000');
+      throw new UnauthorizedException('Starter plan credit limit reached. Please upgrade your subscription.');
     }
 
     return true;

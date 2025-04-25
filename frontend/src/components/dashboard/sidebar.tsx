@@ -97,13 +97,16 @@ const LoadingThumbnail = () => (
 // Memoized template card component
 const TemplateCard = memo(({ 
   template, 
-  onClick 
+  onClick,
+  isSelected = false
 }: { 
   template: Template; 
-  onClick: (template: Template) => void 
+  onClick: (template: Template) => void;
+  isSelected?: boolean;
 }) => (
   <div
-    className="aspect-[9/16] rounded-xl overflow-hidden cursor-pointer shadow-md hover:shadow-lg transition-shadow duration-100 group"
+    className={`aspect-[9/16] rounded-xl overflow-hidden cursor-pointer shadow-md hover:shadow-lg transition-all duration-100 group relative
+      ${isSelected ? 'ring-2 ring-secondary border-secondary border' : ''}`}
     onClick={() => onClick(template)}
   >
     <div className="relative h-full">
@@ -114,19 +117,15 @@ const TemplateCard = memo(({
         sizes="(max-width: 768px) 100vw, 200px"
         className="object-cover"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10 opacity-0 group-hover:opacity-100 transition-opacity">
-        <div className="absolute bottom-3 left-3 right-3">
-          <Badge
-            variant="outline"
-            className="bg-white/90 text-foreground mb-1.5 border-transparent font-normal shadow-sm"
-          >
-            {template.category}
-          </Badge>
-          <p className="text-xs text-white font-medium truncate bg-black/40 rounded-md px-2 py-1 shadow-inner">
-            {template.name}
-          </p>
+      
+      {/* No text overlay, just the checkmark when selected */}
+      {isSelected && (
+        <div className="absolute top-2 right-2 bg-secondary rounded-full p-1 shadow-md z-10">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
         </div>
-      </div>
+      )}
     </div>
   </div>
 ));
@@ -298,35 +297,26 @@ const Sidebar = () => {
   // Image upload handler - memoized
   const handleProductImageUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files || event.target.files.length === 0) return;
-
-    const newFiles = Array.from(event.target.files);
-
+    
+    const files = Array.from(event.target.files);
+    
     // Limit to max 4 images total
-    if (uploadedImages.length + newFiles.length > 4) {
+    if (uploadedImages.length + files.length > 4) {
       alert("You can upload a maximum of 4 images");
       return;
     }
-
-    setUploadingImages(true);
-
-    // Process each file to get base64
-    Promise.all(
-      newFiles.map((file) => {
-        return new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            const base64 = e.target?.result as string;
-            resolve(base64);
-          };
-          reader.readAsDataURL(file);
-        });
-      })
-    ).then((newBases64) => {
-      setUploadedImages((prev) => [...prev, ...newBases64]);
-      setUploadingImages(false);
+    
+    // Process files one by one - simpler approach similar to template upload
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const base64 = e.target?.result as string;
+        setUploadedImages(prev => [...prev, base64]);
+      };
+      reader.readAsDataURL(file);
     });
-
-    // Clear the input
+    
+    // Reset the input value to allow selecting the same file again
     event.target.value = "";
   }, [uploadedImages]);
 
@@ -463,19 +453,15 @@ const Sidebar = () => {
             </h3>
           </div>
 
-          {/* Upload area with thumbnails */}
-          <div className="relative group cursor-pointer">
+          {/* Changed structure to move thumbnails inside the card */}
+          <div className="relative group block">
             <Card
               className="border-[1.5px] border-dashed rounded-3xl border-primary/20 overflow-hidden hover:border-primary/60 transition-colors bg-background/60 shadow-md"
-              onClick={() =>
-                uploadedImages.length < 4 &&
-                document.getElementById("productImageUpload")?.click()
-              }
             >
-              <div className="p-6 flex flex-col items-center relative">
-                {/* Thumbnail previews */}
+              <div className="p-6 flex flex-col items-center justify-center relative text-center">
+                {/* Thumbnail previews moved inside the card */}
                 {uploadedImages.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-4 justify-center">
+                  <div className="flex flex-wrap gap-3 mb-5 justify-center">
                     {uploadedImages.map((base64, index) => (
                       <ImageThumbnail 
                         key={index}
@@ -490,32 +476,26 @@ const Sidebar = () => {
 
                 <div
                   className={`flex flex-col items-center ${
-                    uploadedImages.length >= 4 ? "opacity-50" : ""
+                    uploadedImages.length >= 4 ? "opacity-50 pointer-events-none" : ""
                   }`}
                 >
-                  <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                    <Upload01Icon className="h-5 w-5 text-primary" />
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 border border-primary/20">
+                    <Upload01Icon className="h-6 w-6 text-primary" />
                   </div>
 
-                  <p className="text-sm text-foreground/90 mb-4 font-medium">
+                  <p className="text-sm text-foreground/90 mb-4 font-medium max-w-[220px]">
                     {uploadedImages.length === 0
-                      ? "Drop your product images here"
+                      ? "Add your product images"
                       : uploadedImages.length >= 4
                       ? "Maximum images reached"
                       : "Add more product images"}
                   </p>
 
                   {uploadedImages.length < 4 && (
-                    <label className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-full transition-all font-medium inline-block cursor-pointer hover:shadow-md">
-                      Browse Files
-                      <input
-                        id="productImageUpload"
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        className="hidden"
-                        onChange={handleProductImageUpload}
-                      />
+                    <label htmlFor="productImageUpload" className="cursor-pointer">
+                      <span className="px-6 py-2.5 text-sm bg-primary text-primary-foreground rounded-full transition-all font-medium inline-block cursor-pointer hover:shadow-md hover:bg-primary/90">
+                        Browse Files
+                      </span>
                     </label>
                   )}
 
@@ -526,6 +506,15 @@ const Sidebar = () => {
               </div>
             </Card>
           </div>
+          <input
+            id="productImageUpload"
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={handleProductImageUpload}
+            disabled={uploadedImages.length >= 4}
+          />
         </section>
 
         {/* Template Section */}
@@ -542,63 +531,59 @@ const Sidebar = () => {
 
           {/* Template Grid */}
           <div className="grid grid-cols-2 gap-3">
-            {/* Active template or upload button */}
-            {selectedTemplateUrl.length > 0 ? (
-              <div className="aspect-[9/16] rounded-xl overflow-hidden relative group shadow-md">
-                <Image
-                  src={selectedTemplateUrl[0]}
-                  alt={activeTemplate?.name || "Selected template"}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 200px"
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10 opacity-0 group-hover:opacity-100 transition-opacity">
+            {/* First position - Custom upload OR selected template from gallery (not from the sidebar) */}
+            {(() => {
+              // Check if selected template is one of the displayed ones in sidebar
+              const isSelectedFromSidebar = selectedTemplateUrl.length > 0 && 
+                displayedTemplates.some(t => t.imageUrl === selectedTemplateUrl[0]);
+              
+              // If template is selected from sidebar, show upload button instead
+              if (!selectedTemplateUrl.length || isSelectedFromSidebar) {
+                return (
                   <div
-                    className="absolute top-2 right-2 bg-white/90 rounded-full p-1.5 cursor-pointer shadow-sm hover:bg-white"
+                    className="aspect-[9/16] bg-background rounded-xl flex flex-col items-center justify-center cursor-pointer border border-primary/20 hover:border-primary/40 transition-all shadow-sm"
+                    onClick={() =>
+                      document.getElementById("templateUpload")?.click()
+                    }
+                  >
+                    <div className="p-4 bg-primary/10 rounded-full shadow-sm mb-3 border border-primary/20">
+                      <PlusSignIcon className="h-7 w-7 text-primary" />
+                    </div>
+                    <p className="text-sm text-primary font-medium">
+                      Custom Template
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1 max-w-[80%] text-center">
+                      Upload your own template design
+                    </p>
+                    <input
+                      type="file"
+                      id="templateUpload"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleCustomTemplateUpload}
+                    />
+                  </div>
+                );
+              }
+              
+              // Otherwise show the selected template in first position
+              return (
+                <div className="aspect-[9/16] rounded-xl overflow-hidden relative group shadow-md">
+                  <Image
+                    src={selectedTemplateUrl[0]}
+                    alt={activeTemplate?.name || "Selected template"}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 200px"
+                    className="object-cover"
+                  />
+                  <div className="absolute top-2 right-2 bg-white/90 rounded-full p-1.5 cursor-pointer shadow-sm hover:bg-white z-10"
                     onClick={clearTemplateSelection}
                   >
                     <Cancel01Icon className="h-3.5 w-3.5 text-destructive" />
                   </div>
-                  {activeTemplate && (
-                    <div className="absolute bottom-3 left-3 right-3">
-                      <Badge
-                        variant="outline"
-                        className="bg-white/90 text-foreground mb-1.5 border-transparent font-normal shadow-sm"
-                      >
-                        {activeTemplate.category}
-                      </Badge>
-                      <p className="text-xs text-white font-medium truncate bg-black/40 rounded-md px-2 py-1 shadow-inner">
-                        {activeTemplate.name}
-                      </p>
-                    </div>
-                  )}
                 </div>
-              </div>
-            ) : (
-              <div
-                className="aspect-[9/16] bg-background rounded-xl flex flex-col items-center justify-center cursor-pointer border border-primary/20 hover:border-primary/40 transition-all shadow-sm"
-                onClick={() =>
-                  document.getElementById("templateUpload")?.click()
-                }
-              >
-                <div className="p-4 bg-primary/10 rounded-full shadow-sm mb-3 border border-primary/20">
-                  <PlusSignIcon className="h-7 w-7 text-primary" />
-                </div>
-                <p className="text-sm text-primary font-medium">
-                  Custom Template
-                </p>
-                <p className="text-xs text-muted-foreground mt-1 max-w-[80%] text-center">
-                  Upload your own template design
-                </p>
-                <input
-                  type="file"
-                  id="templateUpload"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleCustomTemplateUpload}
-                />
-              </div>
-            )}
+              );
+            })()}
 
             {/* Display templates */}
             {displayedTemplates.map((template) => (
@@ -606,6 +591,7 @@ const Sidebar = () => {
                 key={template.id} 
                 template={template}
                 onClick={handleTemplateSelection}
+                isSelected={template.imageUrl === selectedTemplateUrl[0]}
               />
             ))}
           </div>

@@ -1,152 +1,17 @@
 "use client";
 import React, { useState } from "react";
-import { Flame, Zap, Diamond, Check, Loader2 } from "lucide-react";
+import { CheckIcon, SparklesIcon, Loader2 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useUserInfo } from "@/lib/queries";
 import { api } from "@/lib/axios";
 import { toast } from "@/hooks/use-toast";
-
-interface PricingCardProps {
-  price: string;
-  planName: string;
-  description: string;
-  features: string[];
-  isPopular?: boolean;
-  icon: React.ReactNode;
-  onSelect: () => void;
-  isLoading?: boolean;
-  selectedPlan?: string;
-}
-
-const PricingCard: React.FC<PricingCardProps> = ({
-  price,
-  planName,
-  description,
-  features,
-  isPopular = false,
-  icon,
-  onSelect,
-  isLoading,
-  selectedPlan,
-}) => {
-  const isSelected = selectedPlan === planName;
-
-  return (
-    <div
-      className={`relative rounded-3xl transition-all duration-500 hover:scale-105 overflow-hidden gradient-border ${
-        isPopular
-          ? "bg-gradient-to-br from-primary/95 to-primary/80 text-primary-foreground shadow-lg shadow-primary/20"
-          : "bg-card hover:shadow-xl hover:shadow-primary/10 border-primary/10"
-      }`}
-    >
-      {isPopular && (
-        <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-          <span className="px-4 py-1.5 rounded-full bg-secondary text-secondary-foreground text-xs font-medium shadow-lg">
-            Most Popular
-          </span>
-        </div>
-      )}
-
-      {/* Decorative background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-10">
-        <div className="absolute -top-[40%] -right-[10%] w-[80%] h-[80%] rounded-full bg-primary blur-[60px]"></div>
-        <div className="absolute -bottom-[30%] -left-[10%] w-[60%] h-[60%] rounded-full bg-secondary blur-[80px]"></div>
-      </div>
-
-      <div className="p-8 relative z-10">
-        <div className="mb-6">
-          <div
-            className={`w-16 h-16 rounded-2xl mb-6 flex items-center justify-center transform transition-transform duration-500 hover:rotate-12 ${
-              isPopular
-                ? "bg-secondary text-secondary-foreground"
-                : "bg-gradient-to-br from-primary/10 to-secondary/10 text-primary"
-            }`}
-          >
-            {icon}
-          </div>
-
-          <h3
-            className={`text-xl font-bold ${
-              isPopular ? "text-primary-foreground" : "text-foreground"
-            }`}
-          >
-            {planName}
-          </h3>
-          <p
-            className={`mt-3 text-sm leading-relaxed ${
-              isPopular ? "text-primary-foreground/80" : "text-muted-foreground"
-            }`}
-          >
-            {description}
-          </p>
-
-          <div className="mt-6 flex items-baseline">
-            <span
-              className={`text-4xl font-bold ${
-                isPopular ? "text-primary-foreground" : "text-foreground"
-              }`}
-            >
-              ${price}
-            </span>
-            <span
-              className={`ml-2 text-sm ${
-                isPopular ? "text-primary-foreground/80" : "text-muted-foreground"
-              }`}
-            >
-              /month
-            </span>
-          </div>
-        </div>
-
-        <div className="h-px w-full bg-gradient-to-r from-transparent via-primary/20 to-transparent my-6"></div>
-
-        <ul className="space-y-4 mb-8">
-          {features.map((feature, index) => (
-            <li key={index} className="flex items-start gap-3">
-              <div
-                className={`mt-0.5 rounded-full p-1 ${
-                  isPopular ? "bg-secondary/80" : "bg-primary/10"
-                }`}
-              >
-                <Check
-                  className={`w-3 h-3 ${
-                    isPopular ? "text-secondary-foreground" : "text-primary"
-                  }`}
-                />
-              </div>
-              <span
-                className={`text-sm leading-relaxed ${
-                  isPopular ? "text-primary-foreground/90" : "text-foreground/80"
-                }`}
-              >
-                {feature}
-              </span>
-            </li>
-          ))}
-        </ul>
-
-        <button
-          onClick={onSelect}
-          disabled={isLoading}
-          className={`w-full py-3.5 rounded-2xl font-medium transition-all duration-300 transform hover:scale-[1.02] flex items-center justify-center ${
-            isPopular
-              ? "bg-secondary text-secondary-foreground hover:shadow-lg hover:shadow-secondary/20"
-              : "bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:shadow-lg hover:shadow-primary/20"
-          } ${isLoading ? "opacity-80 cursor-not-allowed" : ""}`}
-        >
-          {isLoading && isSelected ? (
-            <Loader2 className="w-5 h-5 animate-spin mr-2" />
-          ) : null}
-          {isLoading && isSelected ? "Processing..." : "Get Started"}
-        </button>
-      </div>
-    </div>
-  );
-};
+import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
 
 const SubscriptionDialog = () => {
   const [planName, setPlanName] = useState<string>("Starter");
   const { data } = useUserInfo();
+
   const { mutate, isPending } = useMutation({
     mutationFn: async (plan: string) => {
       const response = await api.post("/payments/create-checkout-session", {
@@ -166,6 +31,7 @@ const SubscriptionDialog = () => {
       });
     },
   });
+  
   if (data?.plan !== "none") return null;
 
   const handlePlanSelection = (selectedPlan: string) => {
@@ -173,118 +39,172 @@ const SubscriptionDialog = () => {
     mutate(selectedPlan);
   };
 
+  const plans = [
+    {
+      name: "Starter",
+      description: "Perfect for individuals creating occasional marketing content with AI.",
+      price: 9.99,
+      period: "month",
+      features: [
+        "150 AI image generations per month",
+        "Access to 100+ ad templates",
+        "Complete AI customization tools",
+        "All image sizes (1:1, 2:3, 3:2)",
+        "Export as PNG, JPG, WEBP",
+        "Image history & checkpoint restore",
+        "Standard customer support",
+      ],
+      color: "primary",
+      popular: false,
+    },
+    {
+      name: "Growth",
+      description: "Ideal for regular content creators needing more generations and faster support.",
+      price: 19.99,
+      period: "month",
+      features: [
+        "400 AI image generations per month",
+        "Access to 100+ ad templates",
+        "Complete AI customization tools",
+        "All image sizes (1:1, 2:3, 3:2)",
+        "Export as PNG, JPG, WEBP",
+        "Image history & checkpoint restore",
+        "Priority customer support",
+      ],
+      color: "secondary",
+      popular: true,
+    },
+    {
+      name: "Annual",
+      description: "Same as monthly Growth plan but with two months free! Best value for your business.",
+      price: 199.99,
+      period: "year",
+      saveInfo: "Save over $39.99 - get two months free!",
+      features: [
+        "400 AI image generations per month",
+        "Access to 100+ ad templates",
+        "Complete AI customization tools", 
+        "All image sizes (1:1, 2:3, 3:2)",
+        "Export as PNG, JPG, WEBP",
+        "Image history & checkpoint restore",
+        "Priority customer support",
+        "✓ Two months free vs. monthly billing",
+      ],
+      color: "accent",
+      popular: false
+    }
+  ];
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-300">
-      <div className="bg-background/95 rounded-3xl border border-primary/20 p-8 max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-2xl relative">
+      <div className="bg-background/95 rounded-3xl border border-primary/20 p-8 max-w-7xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-2xl relative">
         {/* Decorative background elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-[40%] -right-[10%] w-[80%] h-[80%] rounded-full bg-primary/5 blur-[100px] animate-float-slow"></div>
           <div className="absolute -bottom-[30%] -left-[10%] w-[60%] h-[60%] rounded-full bg-secondary/5 blur-[120px] animate-float-reverse"></div>
         </div>
 
-        <div className="text-center space-y-4 mb-12 relative z-10">
-          <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
-            Your subscription has expired
+        {/* Section header with styling matching hero */}
+        <div className="text-center mb-16 max-w-3xl mx-auto relative z-10">
+          <div className="inline-flex items-center px-5 py-2 bg-white/80 text-foreground font-semibold text-sm rounded-full mb-6 shadow-sm border border-secondary/30">
+            <SparklesIcon className="mr-2 h-4 w-4 text-primary" />
+            <span>Choose Your Subscription</span>
+          </div>
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground tracking-tight">
+            Select Your <span className="relative">
+              <span className="relative z-10 bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+                Perfect Plan
+              </span>
+              <span className="absolute bottom-1 left-0 w-full h-5 bg-gradient-to-r from-accent/60 to-accent/30 -z-0 rounded-sm transform -rotate-1"></span>
+            </span>
           </h2>
-          <p className="text-muted-foreground text-lg">
-            Select a plan to continue using all features
+          <p className="text-lg md:text-xl text-foreground/90 max-w-2xl mx-auto leading-relaxed">
+            All plans include a 14-day money-back guarantee, no questions asked.
           </p>
           <div className="h-1 w-24 bg-gradient-to-r from-primary to-secondary rounded-full mx-auto mt-6"></div>
         </div>
-
-        <PricingSection
-          onPlanSelect={handlePlanSelection}
-          isLoading={isPending}
-          selectedPlan={planName}
-          showTitle={false}
-        />
-      </div>
-    </div>
-  );
-};
-
-interface PricingSectionProps {
-  onPlanSelect?: (plan: string) => void;
-  isLoading?: boolean;
-  selectedPlan?: string;
-  showTitle?: boolean;
-}
-
-const PricingSection: React.FC<PricingSectionProps> = ({
-  onPlanSelect,
-  isLoading,
-  selectedPlan,
-}) => {
-  const pricingData = [
-    {
-      price: "9.99",
-      planName: "Starter",
-      description:
-        "Perfect for individuals creating occasional marketing content. Generate high-quality AI images.",
-      icon: <Flame className={`w-7 h-7`} />,
-      features: [
-        "150 image generations per month",
-        "Access to 100+ ad templates",
-        "AI image customization tools",
-        "All image sizes (1:1, 2:3, 3:2)",
-        "Export as PNG, JPG, WEBP",
-        "Image history & checkpoint restore",
-        "Standard customer support",
-      ],
-      isPopular: false,
-    },
-    {
-      price: "19.99",
-      planName: "Growth",
-      description:
-        "Our most popular plan! Ideal for regular content creators needing more generations and faster support.",
-      icon: <Zap className={`w-7 h-7`} />,
-      features: [
-        "400 image generations per month",
-        "Access to 100+ ad templates",
-        "AI image customization tools",
-        "All image sizes (1:1, 2:3, 3:2)",
-        "Export as PNG, JPG, WEBP",
-        "Image history & checkpoint restore",
-        "Priority customer support",
-      ],
-      isPopular: true,
-    },
-    {
-      price: "39.99",
-      planName: "Pro",
-      description:
-        "Maximum power for professional creators. More generations for high-volume content needs.",
-      icon: <Diamond className={`w-7 h-7`} />,
-      features: [
-        "1000 image generations per month",
-        "Access to 100+ ad templates",
-        "AI image customization tools",
-        "All image sizes (1:1, 2:3, 3:2)",
-        "Export as PNG, JPG, WEBP",
-        "Image history & checkpoint restore",
-        "Dedicated support manager",
-      ],
-      isPopular: false,
-    },
-  ];
-
-  return (
-    <section className="py-8 px-4 relative z-10">
-      <div className="max-w-6xl mx-auto">
-        <div className="grid lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {pricingData.map((plan, index) => (
-            <PricingCard
+        
+        {/* Pricing cards with all plans showing at once */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+          {plans.map((plan, index) => (
+            <div
               key={index}
-              {...plan}
-              onSelect={() => onPlanSelect?.(plan.planName)}
-              isLoading={isLoading}
-              selectedPlan={selectedPlan}
-            />
+              className={`relative bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg border ${
+                plan.popular 
+                  ? "border-primary/30 ring-2 ring-primary/30 ring-offset-4 ring-offset-background/80" 
+                  : "border-secondary/30 hover:border-primary/30"
+              } transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl flex flex-col h-full`}
+            >
+              {/* Popular badge */}
+              {plan.popular && (
+                <Badge
+                  className="absolute -top-3 right-6 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-white border-none shadow-md px-4 py-1"
+                >
+                  Most Popular
+                </Badge>
+              )}
+              
+              {/* Plan details */}
+              <div className="mb-6">
+                <h3 className="text-2xl font-bold mb-2 text-foreground">{plan.name}</h3>
+                <p className="text-foreground/70 mb-6 h-12">{plan.description}</p>
+                
+                {/* Pricing with styling matching hero */}
+                <div className="mb-6">
+                  <div className="flex items-end">
+                    <span className="text-4xl font-bold text-foreground">${plan.price}</span>
+                    <span className="text-foreground/70 ml-2 mb-1">/{plan.period}</span>
+                  </div>
+                  {plan.saveInfo && (
+                    <p className="text-sm text-primary mt-1">{plan.saveInfo}</p>
+                  )}
+                </div>
+                
+                {/* Features list with styling matching hero */}
+                <ul className="mb-8 space-y-3">
+                  {plan.features.map((feature, i) => (
+                    <li key={i} className="flex items-start">
+                      <div className="mr-3 mt-1">
+                        <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
+                          <CheckIcon className="w-3 h-3 text-primary" />
+                        </div>
+                      </div>
+                      <span className="text-foreground/90">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              
+              {/* CTA button pushed to bottom with flex-grow */}
+              <div className="mt-auto pt-4">
+                <Button
+                  onClick={() => handlePlanSelection(plan.name)}
+                  disabled={isPending && planName === plan.name}
+                  className="w-full bg-gradient-to-r from-primary to-primary/90 text-primary-foreground hover:from-primary/90 hover:to-primary/80 font-semibold px-8 py-6 rounded-full shadow-md hover:shadow-lg transition-all"
+                >
+                  {isPending && planName === plan.name ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                      Processing...
+                    </>
+                  ) : (
+                    "Get Started"
+                  )}
+                </Button>
+              </div>
+            </div>
           ))}
         </div>
+        
+        {/* Money-back guarantee with styling matching hero */}
+        <div className="mt-16 text-center relative z-10">
+          <div className="inline-flex items-center px-6 py-3 bg-white/80 backdrop-blur-sm text-foreground/90 text-sm rounded-full shadow-sm border border-secondary/30">
+            <CheckIcon className="mr-2 h-4 w-4 text-primary" />
+            <span>14-day money-back guarantee. No questions asked.</span>
+          </div>
+        </div>
       </div>
-    </section>
+    </div>
   );
 };
 

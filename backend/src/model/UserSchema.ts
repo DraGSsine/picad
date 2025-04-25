@@ -18,14 +18,17 @@ export class User extends Document {
   @Prop()
   password: string;
 
-  @Prop({ enum: ['free', 'Starter','Pro', 'Growth'], default: 'free' })
+  @Prop({ enum: ['none', 'Starter', 'Growth', 'Annual'], default: 'none' })
   plan: string;
 
   @Prop({ default: 0 })
   creditsUsed: number;
 
-  @Prop({ enum: [3,100,9999], default: 3 })
+  @Prop({ enum: [150, 400, 9999], default: 150 })
   monthlyCredits: number;
+  
+  @Prop({ enum: ['monthly', 'yearly'], default: 'monthly' })
+  subscriptionType: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
