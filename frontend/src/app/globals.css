@@ -32,7 +32,7 @@
     
     /* Secondary: Peach Color */
     --secondary: 28 85% 70%;        /* Peach */
-    --secondary-foreground: 28 50% 25%; /* Darker Peach/Brown for contrast */
+    --secondary-foreground: 340 75% 55%; /* Deep Teal - beautiful contrast with peach */
     
     /* Extended secondary color palette derived from HSL: 28 85% 70% */
     --secondary-50: 28 90% 95%;      /* Lightest shade - almost white with a hint of peach */

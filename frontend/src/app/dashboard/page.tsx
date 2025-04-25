@@ -1,36 +1,66 @@
 "use client";
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import { Canvas, FabricImage, IText, PencilBrush } from "fabric";
-import { useDashboard } from "@/contexts/DashboardContext";
+import { useDashboard, useImageContext } from "@/contexts/DashboardContext";
 import VerticalToolbar from "@/components/dashboard/VerticalToolbar";
-import { Loading03Icon, Image01Icon } from "hugeicons-react"; // Import icons for loading and no image states
+import { Loading03Icon, Image01Icon } from "hugeicons-react";
 
 const ImageCanvas: React.FC = () => {
   const {
     currentImage,
+    originalImage,
+    setOriginalImage,
     isPending,
     editMode,
     handleToolClick,
     currentImageSize,
     setCanvasRef
   } = useDashboard();
+  
+  // Get the image context once at the component level
+  const imageContext = useImageContext();
 
   const canvasElRef = useRef<HTMLCanvasElement>(null);
   const fabricCanvasRef = useRef<Canvas | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [originalImage, setOriginalImage] = useState<FabricImage | null>(null);
+  const [loadedOriginalImage, setLoadedOriginalImage] = useState<FabricImage | null>(null);
   const [canvasDimensions, setCanvasDimensions] = useState({ width: 400, height: 400 });
+  const editLayerRef = useRef<Canvas | null>(null);
+  const editCanvasElRef = useRef<HTMLCanvasElement | null>(null);
 
-  const [drawingColor, setDrawingColor] = useState<string>("#000000");
-  const [lineWidth, setLineWidth] = useState<number>(3);
-  const [textColor, setTextColor] = useState<string>("#000000");
+  const [drawingColor, setDrawingColor] = useState<string>("#FF0000"); // More visible red color for edits
+  const [lineWidth, setLineWidth] = useState<number>(5); // Thicker lines for better visibility
+  const [textColor, setTextColor] = useState<string>("#FF0000");
   const [textSize, setTextSize] = useState<number>(24);
-
+  
+  // Hook to provide the canvas reference to the context
   useEffect(() => {
     if (fabricCanvasRef.current) {
       setCanvasRef(canvasElRef);
     }
   }, [setCanvasRef, fabricCanvasRef.current]);
+
+  // Create the edit layer canvas
+  useEffect(() => {
+    if (!containerRef.current) return;
+    
+    const editCanvasEl = document.createElement('canvas');
+    editCanvasEl.style.position = 'absolute';
+    editCanvasEl.style.top = '0';
+    editCanvasEl.style.left = '0';
+    editCanvasEl.style.pointerEvents = 'none';
+    editCanvasEl.width = canvasDimensions.width;
+    editCanvasEl.height = canvasDimensions.height;
+    editCanvasEl.style.width = `${canvasDimensions.width}px`;
+    editCanvasEl.style.height = `${canvasDimensions.height}px`;
+    editCanvasElRef.current = editCanvasEl;
+    
+    return () => {
+      if (editCanvasElRef.current?.parentNode) {
+        editCanvasElRef.current.parentNode.removeChild(editCanvasElRef.current);
+      }
+    };
+  }, [canvasDimensions]);
 
   const calculateCanvasDimensions = useCallback(() => {
     if (!containerRef.current) return { width: 400, height: 400 };
@@ -96,7 +126,12 @@ const ImageCanvas: React.FC = () => {
   const loadImageToCanvas = useCallback(async (imageUrl: string, canvas: Canvas) => {
     if (!canvas) return;
     canvas.clear();
-    setOriginalImage(null);
+    setLoadedOriginalImage(null);
+
+    // Store the original image URL for reference when making edits
+    if (!originalImage) {
+      setOriginalImage(imageUrl);
+    }
 
     try {
       const imgElement = await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -111,13 +146,14 @@ const ImageCanvas: React.FC = () => {
       scaleAndCenterImage(fabricImage, canvas);
 
       canvas.add(fabricImage);
-      setOriginalImage(fabricImage);
+      setLoadedOriginalImage(fabricImage);
       canvas.renderAll();
     } catch (error) {
       console.error("Error loading image to canvas:", error);
     }
-  }, [scaleAndCenterImage]);
+  }, [scaleAndCenterImage, originalImage, setOriginalImage]);
 
+  // Initialize the main canvas
   useEffect(() => {
     if (!canvasElRef.current || !containerRef.current) return;
 
@@ -135,8 +171,26 @@ const ImageCanvas: React.FC = () => {
     canvas.freeDrawingBrush = new PencilBrush(canvas);
     canvas.freeDrawingBrush.color = drawingColor;
     canvas.freeDrawingBrush.width = lineWidth;
-
+    
+    // Store fabric canvas in ref
     fabricCanvasRef.current = canvas;
+    
+    // Initialize edit layer
+    if (editCanvasElRef.current && containerRef.current) {
+      containerRef.current.appendChild(editCanvasElRef.current);
+      const editLayer = new Canvas(editCanvasElRef.current, {
+        width: initialDimensions.width,
+        height: initialDimensions.height,
+        isDrawingMode: true,
+        backgroundColor: 'transparent'
+      });
+      
+      editLayer.freeDrawingBrush = new PencilBrush(editLayer);
+      editLayer.freeDrawingBrush.color = drawingColor;
+      editLayer.freeDrawingBrush.width = lineWidth;
+      
+      editLayerRef.current = editLayer;
+    }
 
     const resizeObserver = new ResizeObserver(() => {
       const newDimensions = calculateCanvasDimensions();
@@ -151,65 +205,139 @@ const ImageCanvas: React.FC = () => {
         fabricCanvasRef.current.dispose();
         fabricCanvasRef.current = null;
       }
+      if (editLayerRef.current) {
+        editLayerRef.current.dispose();
+        editLayerRef.current = null;
+      }
     };
-  }, [calculateCanvasDimensions]);
+  }, [calculateCanvasDimensions, drawingColor, lineWidth]);
 
+  // Update dimensions when they change
   useEffect(() => {
     if (fabricCanvasRef.current) {
       fabricCanvasRef.current.setDimensions({
         width: canvasDimensions.width,
         height: canvasDimensions.height
       });
-      if (originalImage) {
-        scaleAndCenterImage(originalImage, fabricCanvasRef.current);
+      
+      if (loadedOriginalImage) {
+        scaleAndCenterImage(loadedOriginalImage, fabricCanvasRef.current);
       }
+      
       fabricCanvasRef.current.renderAll();
     }
-  }, [canvasDimensions, originalImage, scaleAndCenterImage]);
+    
+    if (editLayerRef.current && editCanvasElRef.current) {
+      editLayerRef.current.setDimensions({
+        width: canvasDimensions.width,
+        height: canvasDimensions.height
+      });
+      
+      editCanvasElRef.current.style.width = `${canvasDimensions.width}px`;
+      editCanvasElRef.current.style.height = `${canvasDimensions.height}px`;
+      
+      editLayerRef.current.renderAll();
+    }
+  }, [canvasDimensions, loadedOriginalImage, scaleAndCenterImage]);
 
+  // Load image when currentImage changes
   useEffect(() => {
     if (currentImage && fabricCanvasRef.current) {
       loadImageToCanvas(currentImage, fabricCanvasRef.current);
+      
+      // Clear the edit layer when loading a new image
+      if (editLayerRef.current) {
+        editLayerRef.current.clear();
+        editLayerRef.current.backgroundColor = 'transparent';
+        editLayerRef.current.renderAll();
+      }
     } else if (!currentImage && fabricCanvasRef.current) {
       fabricCanvasRef.current.clear();
-      setOriginalImage(null);
+      setLoadedOriginalImage(null);
       fabricCanvasRef.current.backgroundColor = "#ffffff";
       fabricCanvasRef.current.renderAll();
+      
+      // Also clear the edit layer
+      if (editLayerRef.current) {
+        editLayerRef.current.clear();
+        editLayerRef.current.backgroundColor = 'transparent';
+        editLayerRef.current.renderAll();
+      }
     }
   }, [currentImage, loadImageToCanvas]);
 
+  // Update edit mode settings
   useEffect(() => {
     const canvas = fabricCanvasRef.current;
-    if (!canvas) return;
+    const editLayer = editLayerRef.current;
+    
+    if (!canvas || !editLayer) return;
 
+    // Main canvas settings
     canvas.isDrawingMode = false;
     canvas.selection = true;
     canvas.defaultCursor = 'default';
     canvas.hoverCursor = 'move';
-
+    
+    // Edit layer settings
+    editLayer.isDrawingMode = editMode === "draw";
+    
     if (editMode === "draw") {
-      canvas.isDrawingMode = true;
-      if (canvas.freeDrawingBrush) {
-        canvas.freeDrawingBrush.color = drawingColor;
-        canvas.freeDrawingBrush.width = lineWidth;
+      if (editLayer.freeDrawingBrush) {
+        editLayer.freeDrawingBrush.color = drawingColor;
+        editLayer.freeDrawingBrush.width = lineWidth;
       }
+      
+      editLayer.defaultCursor = 'crosshair';
+      editCanvasElRef.current!.style.pointerEvents = 'auto';
+      canvas.selection = false;
     } else if (editMode === "text") {
       canvas.defaultCursor = 'text';
       canvas.hoverCursor = 'text';
+      editCanvasElRef.current!.style.pointerEvents = 'none';
     } else {
-      canvas.isDrawingMode = false;
+      editCanvasElRef.current!.style.pointerEvents = 'none';
     }
 
     canvas.renderAll();
+    editLayer.renderAll();
   }, [editMode, drawingColor, lineWidth]);
 
+  // Update drawing settings when they change
   useEffect(() => {
-    const canvas = fabricCanvasRef.current;
-    if (canvas?.isDrawingMode && canvas.freeDrawingBrush) {
-      canvas.freeDrawingBrush.color = drawingColor;
-      canvas.freeDrawingBrush.width = lineWidth;
+    const editLayer = editLayerRef.current;
+    if (editLayer?.isDrawingMode && editLayer.freeDrawingBrush) {
+      editLayer.freeDrawingBrush.color = drawingColor;
+      editLayer.freeDrawingBrush.width = lineWidth;
     }
   }, [drawingColor, lineWidth]);
+
+  // Add methods to get the edit mask for the API
+  useEffect(() => {
+    // Add a method to the context to get just the edit mask
+    const originalGetEditMaskImage = imageContext.getEditMaskImage;
+    
+    if (typeof originalGetEditMaskImage === 'function') {
+      // Override with our implementation that returns just the edit layer
+      (imageContext).getEditMaskImage = () => {
+        if (!editLayerRef.current || !editCanvasElRef.current) return null;
+        
+        try {
+          return editCanvasElRef.current.toDataURL('image/png');
+        } catch (error) {
+          console.error("Error getting edit mask:", error);
+          return null;
+        }
+      };
+    }
+    
+    // Restore original function on unmount
+    return () => {
+      if (typeof originalGetEditMaskImage === 'function') {
+        (imageContext).getEditMaskImage = originalGetEditMaskImage;
+      }
+    };
+  }, [imageContext]);
 
   const handleDrawClick = () => {
     handleToolClick(editMode === "draw" ? "none" : "draw");
@@ -218,46 +346,32 @@ const ImageCanvas: React.FC = () => {
   const handleTextClick = () => {
     const nextMode = editMode === "text" ? "none" : "text";
     handleToolClick(nextMode);
-    if (nextMode === "text" && fabricCanvasRef.current) {
+    if (nextMode === "text" && fabricCanvasRef.current && editLayerRef.current) {
       addText();
     }
   };
 
   const handleResetClick = () => {
-    const canvas = fabricCanvasRef.current;
-    if (!canvas || !originalImage) return;
-
-    canvas.getObjects().forEach(obj => {
-      if (obj !== originalImage) {
-        canvas.remove(obj);
-      }
-    });
-
-    scaleAndCenterImage(originalImage, canvas);
-    originalImage.set({
-      selectable: false,
-      lockMovementX: true,
-      lockMovementY: true,
-      lockRotation: true,
-      lockScalingX: true,
-      lockScalingY: true,
-      hoverCursor: 'default'
-    });
-
+    // Clear only the edit layer, preserving the original image
+    if (editLayerRef.current) {
+      editLayerRef.current.clear();
+      editLayerRef.current.backgroundColor = 'transparent';
+      editLayerRef.current.renderAll();
+    }
+    
     handleToolClick("none");
-    canvas.renderAll();
   };
 
   const addText = () => {
-    const canvas = fabricCanvasRef.current;
-    if (!canvas || !canvas.width || !canvas.height) return;
+    const editLayer = editLayerRef.current;
+    if (!editLayer || !editLayer.width || !editLayer.height) return;
 
     const text = new IText("Edit this text", {
       fill: textColor,
       fontSize: textSize,
       fontFamily: "Arial",
-      left: canvas.width / 2,
-      top: canvas.height / 2,
+      left: editLayer.width / 2,
+      top: editLayer.height / 2,
       originX: "center",
       originY: "center",
       editable: true,
@@ -266,11 +380,11 @@ const ImageCanvas: React.FC = () => {
       lockUniScaling: false,
     });
 
-    canvas.add(text);
-    canvas.setActiveObject(text);
+    editLayer.add(text);
+    editLayer.setActiveObject(text);
     text.enterEditing();
     text.selectAll();
-    canvas.renderAll();
+    editLayer.renderAll();
   };
 
   return (
@@ -320,6 +434,13 @@ const ImageCanvas: React.FC = () => {
               <p className="text-gray-500 max-w-md">
                 Generate or upload an image to start editing.
               </p>
+            </div>
+          )}
+          
+          {editMode !== "none" && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/75 text-white px-4 py-2 rounded-full text-sm font-medium">
+              {editMode === "draw" ? "Draw on the areas you want to edit, then describe the changes" : 
+               editMode === "text" ? "Add and edit text elements" : ""}
             </div>
           )}
         </div>

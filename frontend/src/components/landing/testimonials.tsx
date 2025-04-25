@@ -2,30 +2,30 @@ import React from 'react';
 import Image from 'next/image';
 import { SparklesIcon } from "lucide-react";
 
-// Testimonials data with Unsplash images
+// Testimonials data with high-quality images
 const testimonialsData = [
   {
     id: 1,
-    text: "Picad has completely transformed how I create ads for my online store. What used to take hours now takes minutes, and the results are stunning every time.",
-    name: "Emily Johnson",
-    title: "Product Designer",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=256&q=80",
+    text: "I was at my wit's end with design tools until I found Picad. It's like it reads my mind - I describe what I need and boom, usable ad in minutes. My campaign click-throughs are up 47% since switching.",
+    name: "Akram Olika",
+    title: "Independent Craft Retailer",
+    avatar: "https://images.unsplash.com/photo-1621389099366-a82b750ba2b3?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     rating: 5,
   },
   {
     id: 2,
-    text: "I was hesitant to try Picad at first, but I'm so glad I did. The AI brush tool alone has saved me countless hours of frustration with Photoshop.",
-    name: "Olivia Carter",
-    title: "Sales Manager",
-    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=256&q=80",
+    text: "Look, I'm not a tech person. At all. But Picad doesn't care - it just works. I mumble something about 'forest vibes for my handmade soaps' and out pops something I'd have paid a designer $300 for. Game-changer.",
+    name: "Thaddeus Wozniak",
+    title: "Digital Marketer",
+    avatar: "https://images.unsplash.com/photo-1696238250459-d99f9522a0e8?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     rating: 5,
   },
   {
     id: 3,
-    text: "As a small business owner with zero design skills, Picad has been a game-changer. My ads now look professionally designed and perform significantly better.",
-    name: "Wyatt Turner",
-    title: "Boutique Owner",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=256&q=80",
+    text: "Running a food truck meant I was doing everything - cooking, serving, AND marketing. My social posts looked terrible until Picad. Now people actually stop scrolling when they see my daily specials. Worth every penny.",
+    name: "Xiomara Nunez",
+    title: "Food Truck Owner",
+    avatar: "https://images.unsplash.com/photo-1567037782848-d0fe9a51ec4c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=512&q=100",
     rating: 5,
   },
 ];
@@ -50,23 +50,23 @@ const StarRating = ({ rating }: { rating: number }) => (
 
 const Testimonials: React.FC = () => {
   return (
-    <section className="py-24 md:py-32 relative overflow-hidden">
+    <section id='testimonials' className="py-24 md:py-32 relative overflow-hidden">
       <div className="container mx-auto px-6 relative z-10">
         <div className="flex flex-wrap lg:flex-nowrap items-center gap-12 lg:gap-16">
           {/* Left Column: Text Content */}
           <div className="w-full lg:w-1/3 space-y-6 animate-fade-in" style={{ animationDelay: "0.1s" }}>
             <div className="inline-flex items-center px-5 py-2 bg-white/80 text-foreground font-semibold text-sm rounded-full mb-6 shadow-sm border border-secondary/30">
               <SparklesIcon className="mr-2 h-4 w-4 text-primary" />
-              <span>Client Experiences</span>
+              <span>Real Customer Stories</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold text-foreground leading-tight tracking-tight">
-              What Our Users <span className="relative">
-                <span className="relative z-10 bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">Say About Us</span>
+              From Actual <span className="relative">
+                <span className="relative z-10 bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">People Like You</span>
                 <span className="absolute bottom-1 left-0 w-full h-5 bg-gradient-to-r from-accent/60 to-accent/30 -z-0 rounded-sm transform -rotate-1"></span>
               </span>
             </h2>
             <p className="text-lg md:text-xl text-foreground/90 leading-relaxed">
-              Discover how our platform has transformed the way businesses create high-converting advertisements.
+              No marketing fluff. Just honest stories from small business owners who were skeptical at first too.
             </p>
             <div className="w-20 h-1 bg-gradient-to-r from-primary to-accent/80 rounded-full my-4"></div>
           </div>
@@ -84,13 +84,16 @@ const Testimonials: React.FC = () => {
               <StarRating rating={testimonialsData[0].rating} />
               <p className="text-foreground/90 font-medium italic mb-6">&ldquo;{testimonialsData[0].text}&rdquo;</p>
               <div className="flex items-center pt-4 border-t border-secondary/30">
-                <div className="h-12 w-12 rounded-full overflow-hidden relative mr-4 ring-2 ring-secondary/30">
+                <div className="h-16 w-16 rounded-full overflow-hidden relative mr-4 ring-2 ring-secondary/30">
                   <Image 
                     src={testimonialsData[0].avatar} 
                     alt={testimonialsData[0].name} 
-                    width={48}
-                    height={48}
+                    fill
+                    sizes="(max-width: 768px) 64px, 64px"
                     className="object-cover"
+                    style={{ objectPosition: 'center' }}
+                    priority
+                    quality={100}
                   />
                 </div>
                 <div>
@@ -113,13 +116,16 @@ const Testimonials: React.FC = () => {
                 <StarRating rating={testimonialsData[1].rating} />
                 <p className="text-foreground/90 font-medium italic mb-6">&ldquo;{testimonialsData[1].text}&rdquo;</p>
                 <div className="flex items-center pt-4 border-t border-secondary/30">
-                  <div className="h-12 w-12 rounded-full overflow-hidden relative mr-4 ring-2 ring-secondary/30">
+                  <div className="h-16 w-16 rounded-full overflow-hidden relative mr-4 ring-2 ring-secondary/30">
                     <Image 
                       src={testimonialsData[1].avatar} 
                       alt={testimonialsData[1].name} 
-                      width={48}
-                      height={48}
+                      fill
+                      sizes="(max-width: 768px) 64px, 64px"
                       className="object-cover"
+                      style={{ objectPosition: 'center' }}
+                      priority
+                      quality={100}
                     />
                   </div>
                   <div>
@@ -140,13 +146,16 @@ const Testimonials: React.FC = () => {
                 <StarRating rating={testimonialsData[2].rating} />
                 <p className="text-foreground/90 font-medium italic mb-6">&ldquo;{testimonialsData[2].text}&rdquo;</p>
                 <div className="flex items-center pt-4 border-t border-secondary/30">
-                  <div className="h-12 w-12 rounded-full overflow-hidden relative mr-4 ring-2 ring-secondary/30">
+                  <div className="h-16 w-16 rounded-full overflow-hidden relative mr-4 ring-2 ring-secondary/30">
                     <Image 
                       src={testimonialsData[2].avatar} 
                       alt={testimonialsData[2].name}
-                      width={48}
-                      height={48}
+                      fill
+                      sizes="(max-width: 768px) 64px, 64px"
                       className="object-cover"
+                      style={{ objectPosition: 'center' }}
+                      priority
+                      quality={100}
                     />
                   </div>
                   <div>

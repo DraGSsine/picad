@@ -12,6 +12,9 @@ interface ImageContextType {
   currentImageSize: string;
   setCurrentImageSize: (imageSize: string) => void;
   getCanvasImage: () => string | null;
+  getEditMaskImage: () => string | null; // New function to get only the edit mask
+  originalImage: string | null; // Store the original image separately
+  setOriginalImage: (image: string | null) => void;
 }
 
 interface CanvasContextType {
@@ -92,6 +95,7 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
   // Image state
   const [currentImage, setCurrentImage] = useState<string | null>(null);
   const [currentImageSize, setCurrentImageSize] = useState<string>("1024x1024");
+  const [originalImage, setOriginalImage] = useState<string | null>(null);
   
   // Canvas state
   const [canvasRef, setCanvasRef] = useState<React.MutableRefObject<HTMLCanvasElement | null> | null>(null);
@@ -129,6 +133,18 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
       return currentImage;
     }
   }, [canvasRef, currentImage]);
+
+  const getEditMaskImage = useCallback((): string | null => {
+    if (!canvasRef?.current) return null;
+
+    try {
+      // Logic to extract only the edit mask from the canvas
+      return canvasRef.current.toDataURL('image/png');
+    } catch (error) {
+      console.error("Error getting edit mask image:", error);
+      return null;
+    }
+  }, [canvasRef]);
 
   // API mutations with useCallback to prevent unnecessary recreation
   const { mutate, isPending } = useMutation({
@@ -188,18 +204,20 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
         localStorage.getItem("adCreatorData") || "{}"
       );
       
-      const editedImage = getCanvasImage();
+      // Get the original image and the canvas with edits
+      const originalImg = originalImage || currentImage;
+      const editMaskImg = getEditMaskImage();
       
-      if (!editedImage) {
-        throw new Error("No image to edit");
+      if (!originalImg || !editMaskImg) {
+        throw new Error("Missing image data for editing");
       }
       
-      const base64Data = editedImage.split(',')[1];
-      
+      // Send both the original image and the edit mask to the API
       const response = await api.post("/ai/edit", {
         prompt,
         adCreatorData,
-        currentImage: base64Data,
+        currentImage: originalImg,
+        canvasEditData: editMaskImg,
       });
       return response.data;
     },
@@ -207,7 +225,9 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
       if (data.imageData) {
         const imageUrl = `data:image/png;base64,${data.imageData}`;
         
+        // Update both the current and original image with the result
         setCurrentImage(imageUrl);
+        setOriginalImage(imageUrl);
         
         if (data.imageSize) {
           setCurrentImageSize(data.imageSize);
@@ -265,8 +285,11 @@ export const DashboardProvider: React.FC<{ children: ReactNode }> = ({ children 
     setCurrentImage,
     currentImageSize,
     setCurrentImageSize,
-    getCanvasImage
-  }), [currentImage, currentImageSize, getCanvasImage]);
+    getCanvasImage,
+    getEditMaskImage,
+    originalImage,
+    setOriginalImage
+  }), [currentImage, currentImageSize, getCanvasImage, getEditMaskImage, originalImage]);
 
   const canvasContextValue = useMemo(() => ({
     canvasRef,

@@ -1,5 +1,4 @@
-import React, { ReactNode, Suspense } from "react";
-import LoadingSpinner from "@/components/ui/loading-spinner";
+import React, { ReactNode } from "react";
 
 // Simple imports instead of dynamic imports
 import NavBar from "@/components/dashboard/NavBar";

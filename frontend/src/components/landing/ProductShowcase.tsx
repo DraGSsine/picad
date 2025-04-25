@@ -1,29 +1,27 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import {
-  ChevronLeft,
-  ChevronRight
-} from "lucide-react";
+import Image from "next/image";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const productShowcases = [
   {
     beforeImage: "/showcase/product-1-before.webp",
-    afterImage: "/showcase/prodcut-1-after.png"
+    afterImage: "/showcase/prodcut-1-after.png",
   },
   {
     beforeImage: "/showcase/product-2-before.jpeg",
-    afterImage: "/showcase/product-2-after.webp"
+    afterImage: "/showcase/product-2-after.webp",
   },
   {
     beforeImage: "/showcase/prodcut-3-before.jpg",
-    afterImage: "/showcase/prodcut-3-after.png"
+    afterImage: "/showcase/prodcut-3-after.png",
   },
   {
-    beforeImage: "/showcase/product-4-before.jpg",
-    afterImage: "/showcase/product-4-after.png"
-  }
+    beforeImage: "/showcase/prodcut-4-before.png",
+    afterImage: "/showcase/prodcut-4-after.png",
+  },
 ];
 
 export const ProductShowcase = () => {
@@ -36,7 +34,9 @@ export const ProductShowcase = () => {
     let timer: NodeJS.Timeout;
     if (isAutoPlaying) {
       timer = setInterval(() => {
-        setActiveIndex((current) => (current === productShowcases.length - 1 ? 0 : current + 1));
+        setActiveIndex((current) =>
+          current === productShowcases.length - 1 ? 0 : current + 1
+        );
       }, 5000);
     }
     return () => clearInterval(timer);
@@ -44,18 +44,20 @@ export const ProductShowcase = () => {
 
   const handleNext = () => {
     setIsAutoPlaying(false);
-    setActiveIndex((current) => (current === productShowcases.length - 1 ? 0 : current + 1));
+    setActiveIndex((current) =>
+      current === productShowcases.length - 1 ? 0 : current + 1
+    );
   };
 
   const handlePrev = () => {
     setIsAutoPlaying(false);
-    setActiveIndex((current) => (current === 0 ? productShowcases.length - 1 : current - 1));
+    setActiveIndex((current) =>
+      current === 0 ? productShowcases.length - 1 : current - 1
+    );
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (showcaseRef.current) {
-      const rect = showcaseRef.current.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 100;
+    if (showcaseRef.current && e) {
     }
   };
 
@@ -68,10 +70,7 @@ export const ProductShowcase = () => {
   };
 
   const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (showcaseRef.current) {
-      const rect = showcaseRef.current.getBoundingClientRect();
-      const touch = e.touches[0];
-      const x = ((touch.clientX - rect.left) / rect.width) * 100;
+    if (showcaseRef.current && e) {
     }
   };
 
@@ -80,22 +79,21 @@ export const ProductShowcase = () => {
       isDraggingRef.current = false;
     };
 
-    document.addEventListener('mouseup', handleMouseUpGlobal);
+    document.addEventListener("mouseup", handleMouseUpGlobal);
     return () => {
-      document.removeEventListener('mouseup', handleMouseUpGlobal);
+      document.removeEventListener("mouseup", handleMouseUpGlobal);
     };
   }, []);
 
   return (
-    <div className="relative w-full max-w-3xl mx-auto px-4">
-      {/* Decorative Elements */}
+    <div className="relative w-full mx-auto">
+      {/* Enhanced decorative elements with vibrant gradients */}
       <div className="absolute -top-20 right-0 w-72 h-72 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-full blur-3xl opacity-60" />
       <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-gradient-to-tr from-pink-500/20 to-purple-500/20 rounded-full blur-3xl opacity-60" />
 
-      <div 
+      <div
         ref={showcaseRef}
-        className="relative bg-white/5 backdrop-blur-sm rounded-2xl overflow-hidden shadow-2xl border border-white/10"
-        style={{ aspectRatio: "2/2" }}
+        className="relative bg-white/5 backdrop-blur-sm rounded-2xl overflow-hidden shadow-2xl border border-white/10 w-full h-[56vh]"
         onMouseMove={handleMouseMove}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
@@ -108,43 +106,45 @@ export const ProductShowcase = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.3 }}
             className="relative w-full h-full"
           >
             <div className="grid grid-cols-2 h-full">
               <div className="relative overflow-hidden border-r border-white/20">
-                {/* Before Label */}
+                {/* Enhanced Before Label */}
                 <div className="absolute top-4 left-4 bg-black/70 text-white px-3 py-1 text-sm font-semibold rounded-md backdrop-blur-sm z-10 shadow-lg">
-                  Before
+                  Original
                 </div>
-                <motion.img
-                  src={productShowcases[activeIndex].beforeImage}
-                  alt="Before"
-                  className="w-full h-full object-cover"
-                  initial={{ scale: 1.1 }}
-                  animate={{ scale: 1 }}
-                  transition={{ duration: 0.7 }}
-                />
+                <div className="w-full h-full relative">
+                  <Image
+                    src={productShowcases[activeIndex].beforeImage}
+                    alt="Before"
+                    priority
+                    fill
+                    className="object-cover"
+                  />
+                </div>
               </div>
               <div className="relative overflow-hidden">
-                {/* After Label */}
-                <div className="absolute top-4 right-4 bg-black/70 text-white px-3 py-1 text-sm font-semibold rounded-md backdrop-blur-sm z-10 shadow-lg">
-                  After
+                {/* Enhanced After Label */}
+                <div className="absolute top-4 right-4 bg-gradient-to-r from-primary to-primary/80 text-white px-3 py-1 text-sm font-semibold rounded-md backdrop-blur-sm z-10 shadow-lg">
+                  Enhanced
                 </div>
-                <motion.img
-                  src={productShowcases[activeIndex].afterImage}
-                  alt="After"
-                  className="w-full h-full object-cover"
-                  initial={{ scale: 1.1 }}
-                  animate={{ scale: 1 }}
-                  transition={{ duration: 0.7 }}
-                />
+                <div className="w-full h-full relative">
+                  <Image
+                    fill
+                    src={productShowcases[activeIndex].afterImage}
+                    alt="After"
+                    priority
+                    className="object-cover"
+                  />
+                </div>
               </div>
             </div>
           </motion.div>
         </AnimatePresence>
 
-        {/* Navigation Controls */}
+        {/* Enhanced Navigation Controls */}
         <div className="absolute top-1/2 -translate-y-1/2 left-4 right-4 flex justify-between pointer-events-none">
           <Button
             variant="ghost"
@@ -165,9 +165,9 @@ export const ProductShowcase = () => {
         </div>
       </div>
 
-      {/* Bottom Controls - Only showing indicator dots now */}
+      {/* Improved indicator dots */}
       <div className="mt-4 flex items-center justify-center">
-        <div className="flex gap-1">
+        <div className="flex gap-2">
           {productShowcases.map((_, index) => (
             <button
               key={index}
@@ -178,7 +178,7 @@ export const ProductShowcase = () => {
               className={cn(
                 "w-2 h-2 rounded-full transition-all duration-300 shadow-md",
                 index === activeIndex
-                  ? "bg-indigo-500 w-4"
+                  ? "bg-primary w-5"
                   : "bg-white/70 hover:bg-white"
               )}
               aria-label={`Go to slide ${index + 1}`}

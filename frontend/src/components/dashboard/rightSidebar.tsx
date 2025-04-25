@@ -3,6 +3,7 @@ import React, { useEffect, useState, useCallback, useMemo, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useImageContext, usePromptContext, useHistoryContext } from "@/contexts/DashboardContext";
+import { HistoryItem } from "@/types/history";
 
 import {
   Tooltip,
@@ -15,12 +16,12 @@ import { cn } from "@/lib/utils";
 import { Clock01Icon, Copy01Icon, Delete01Icon, Download01Icon, Message01Icon, Share01Icon, SparklesIcon } from "hugeicons-react";
 
 // Memoized HistoryItem component to prevent re-renders
-const HistoryItem = memo(({ 
+const HistoryItemComponent = memo(({ 
   item, 
   isActive, 
   onSelect 
 }: { 
-  item: any; 
+  item: HistoryItem; 
   isActive: boolean;
   onSelect: (url: string) => void;
 }) => (
@@ -65,7 +66,7 @@ const HistoryItem = memo(({
     )}
   </div>
 ));
-HistoryItem.displayName = 'HistoryItem';
+HistoryItemComponent.displayName = 'HistoryItemComponent';
 
 // Main component
 const RightSidebar: React.FC = () => {
@@ -414,7 +415,7 @@ const RightSidebar: React.FC = () => {
               ) : (
                 <div className="space-y-1">
                   {history.map((item) => (
-                    <HistoryItem
+                    <HistoryItemComponent
                       key={item.id}
                       item={item}
                       isActive={currentImage === item.imageUrl}

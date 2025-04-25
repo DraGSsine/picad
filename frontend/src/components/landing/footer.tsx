@@ -7,10 +7,10 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
   
   const mainLinks = [
-    { name: "Features", href: "#" },
+    { name: "How it works", href: "#how-it-works" },
     { name: "Pricing", href: "#pricing" },
-    { name: "About", href: "#" },
-    { name: "Support", href: "#" },
+    { name: "Testimonials", href: "#testimonials" },
+    { name: "FAQ", href: "#faq" },
   ];
 
   return (
@@ -45,10 +45,10 @@ const Footer = () => {
             &copy; {currentYear} Picad. All rights reserved.
           </p>
           <div className="flex gap-6 text-sm text-foreground/70">
-            <Link href="#" className="hover:text-primary transition-colors">
+            <Link href="/privacy" className="hover:text-primary transition-colors">
               Privacy
             </Link>
-            <Link href="#" className="hover:text-primary transition-colors">
+            <Link href="/terms" className="hover:text-primary transition-colors">
               Terms
             </Link>
           </div>

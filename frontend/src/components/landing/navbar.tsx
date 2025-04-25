@@ -27,13 +27,13 @@ const NavigationBar = () => {
             {/* Desktop Navigation with elegant styling */}
             <div className="hidden md:flex items-center space-x-8">
               <Link
-                href="#features"
+                href="#how-it-works"
                 className={cn(
                   "font-medium text-sm transition-all duration-300 relative group",
                   "text-foreground hover:text-primary"
                 )}
               >
-                <span>Features</span>
+                <span>How it works</span>
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
               </Link>
               <Link
@@ -44,6 +44,26 @@ const NavigationBar = () => {
                 )}
               >
                 <span>Pricing</span>
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
+              </Link>
+              <Link
+                href="#testimonials"
+                className={cn(
+                  "font-medium text-sm transition-all duration-300 relative group",
+                  "text-foreground hover:text-primary"
+                )}
+              >
+                <span>Testimonials</span>
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
+              </Link>
+              <Link
+                href="#faq"
+                className={cn(
+                  "font-medium text-sm transition-all duration-300 relative group",
+                  "text-foreground hover:text-primary"
+                )}
+              >
+                <span>FAQ</span>
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
               </Link>
               <div className="flex items-center space-x-4">
@@ -90,11 +110,11 @@ const NavigationBar = () => {
             <div className="py-6 px-6">
               <div className="flex flex-col space-y-4">
                 <Link
-                  href="#features"
+                  href="#how-it-works"
                   className="text-foreground py-2 px-4 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/70 font-medium text-sm flex items-center justify-between group"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  <span>Features</span>
+                  <span>How it works</span>
                   <ChevronRight className="w-4 h-4 text-primary/70 group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <Link
@@ -103,6 +123,22 @@ const NavigationBar = () => {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <span>Pricing</span>
+                  <ChevronRight className="w-4 h-4 text-primary/70 group-hover:translate-x-1 transition-transform" />
+                </Link>
+                <Link
+                  href="#testimonials"
+                  className="text-foreground py-2 px-4 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/70 font-medium text-sm flex items-center justify-between group"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <span>Testimonials</span>
+                  <ChevronRight className="w-4 h-4 text-primary/70 group-hover:translate-x-1 transition-transform" />
+                </Link>
+                <Link
+                  href="#faq"
+                  className="text-foreground py-2 px-4 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/70 font-medium text-sm flex items-center justify-between group"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <span>FAQ</span>
                   <ChevronRight className="w-4 h-4 text-primary/70 group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <div className="grid gap-3 pt-4">

@@ -97,10 +97,11 @@ const FAQ = () => {
           <p className="text-foreground/90 mb-6">
             Don&apos;t see your question? We&apos;re here to help!
           </p>
-          <Button
+          <Button 
+            asChild
             className="bg-gradient-to-r from-primary via-primary/90 to-primary text-primary-foreground hover:from-primary/90 hover:to-primary/80 font-semibold px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105 border border-primary/10"
           >
-            Contact Support
+            <a href="mailto:ouchen606@gmail.com?subject=Support Request - PicAd">Contact Support</a>
           </Button>
         </div>
       </div>

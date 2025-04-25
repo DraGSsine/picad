@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "../ui/button";
-import { SparklesIcon } from "lucide-react";
+import { SparklesIcon, SunIcon, SlidersIcon } from "lucide-react";
 import Link from "next/link";
 
 const CTA = () => {
@@ -62,20 +62,13 @@ const CTA = () => {
                 </div>
                 <div className="flex flex-col items-center">
                   <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center mb-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-secondary">
-                      <path d="M12 2v4"></path><path d="M12 18v4"></path><path d="M4.93 4.93l2.83 2.83"></path>
-                      <path d="M16.24 16.24l2.83 2.83"></path><path d="M2 12h4"></path><path d="M18 12h4"></path>
-                      <path d="M4.93 19.07l2.83-2.83"></path><path d="M16.24 7.76l2.83-2.83"></path>
-                    </svg>
+                    <SunIcon className="h-5 w-5 text-secondary" />
                   </div>
                   <span className="text-sm font-medium">In Minutes, Not Hours</span>
                 </div>
                 <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center mb-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent">
-                      <path d="M20 7h-9"></path><path d="M14 17H5"></path><circle cx="17" cy="17" r="3"></circle>
-                      <circle cx="7" cy="7" r="3"></circle>
-                    </svg>
+                  <div className="w-10 h-10 rounded-full bg-secondary-foreground/10 flex items-center justify-center mb-2">
+                    <SlidersIcon className="h-5 w-5 text-secondary-foreground" />
                   </div>
                   <span className="text-sm font-medium">Simple & Intuitive</span>
                 </div>
