@@ -193,8 +193,8 @@ const RightSidebar: React.FC = () => {
   const hasCurrentImage = !!currentImage;
 
   return (
-    <aside className="backdrop-blur-md bg-white rounded-3xl flex flex-col h-full w-full md:w-[350px] lg:w-[380px] flex-shrink-0 shadow-lg overflow-hidden z-10 border-[1.5px] border-gray-200/70 custom-scrollbar">
-      <div className="flex-1 p-5 space-y-8">
+    <aside className="backdrop-blur-md bg-white rounded-3xl flex flex-col h-full w-full md:w-[350px] lg:w-[380px] flex-shrink-0 shadow-lg overflow-hidden z-10 border-[1.5px] border-gray-200/70">
+      <div className="flex-1 p-5 space-y-8 custom-scrollbar">
         {/* Prompt Section */}
         <section className="space-y-4">
           <div className="flex items-center gap-2">

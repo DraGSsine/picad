@@ -21,6 +21,6 @@ export const metadata: Metadata = {
     description: "Upload product → Select template → Get stunning ad. Boost conversions with professional marketing visuals for your products instantly.",
   },
   alternates: {
-    canonical: "https://picad.pro",
+    canonical: "https://picad.space",
   },
 };

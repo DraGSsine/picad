@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "PicAd - Transform Your Products Into Eye-Catching Advertisements",
     description: "Generate professional ad images in seconds. Upload your product, choose a template, and create stunning marketing visuals with our AI-powered platform.",
-    url: "https://picad.pro",
+    url: "https://picad.space",
     siteName: "PicAd",
     images: [
       {
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     follow: true,
   },
   alternates: {
-    canonical: "https://picad.pro",
+    canonical: "https://picad.space",
   },
 };
 

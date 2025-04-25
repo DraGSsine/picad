@@ -43,8 +43,8 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'http://localhost:3000',
-      'https://drawbrand.art',
-      'https://www.drawbrand.art',
+      'https://picad.space',
+      'https://www.picad.space',
     ],
     credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',

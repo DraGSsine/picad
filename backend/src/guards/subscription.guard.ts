@@ -24,7 +24,7 @@ export class SubscriptionGuard implements CanActivate {
       throw new UnauthorizedException('You do not have a subscription plan please visit http://localhost:3000');
     if (userPlan === 'free' && usageExceeded) {
       await this.userModel.findByIdAndUpdate(userId, { plan: 'none' });
-      throw new UnauthorizedException('Free plan limit reached please visit https://drawbrand.art');
+      throw new UnauthorizedException('Free plan limit reached please visit https://picad.space');
     }
     if (userPlan === 'Starter' && usageExceeded) {
       await this.userModel.findByIdAndUpdate(userId, { plan: 'none' });

@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 
-const BASE_URL = 'https://picad.pro'
+const BASE_URL = 'https://picad.space'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [

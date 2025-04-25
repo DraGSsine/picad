@@ -50,13 +50,30 @@ export class AiService {
     adCreatorData: IadCreatorData,
     currentImage: string,
     userEmail: string,
+    canvasEditData?: string, // New parameter for canvas edit data
   ): Promise<{ imageData: string; imageSize: string }> {
     try {
-      // Generate a new prompt for editing
-      const generatedPrompt = await this.generateEditPrompt(
-        prompt,
-        currentImage,
-      );
+      // If we have canvas edit data, process it together with the original image
+      const isIntelligentEdit = !!canvasEditData;
+      
+      // Use a different approach based on whether we have canvas edit data
+      let generatedPrompt;
+      if (isIntelligentEdit) {
+        // Generate prompt specifically for intelligent edits using both original image and edits
+        generatedPrompt = await this.generateIntelligentEditPrompt(
+          prompt,
+          currentImage,
+          canvasEditData
+        );
+      } else {
+        // Fall back to the existing edit prompt generation
+        generatedPrompt = await this.generateEditPrompt(
+          prompt,
+          currentImage,
+        );
+      }
+
+      this.logger.log(`Generated Edit Prompt: ${generatedPrompt.substring(0, 100)}...`);
 
       // Process the current image - remove data URI prefix if present
       let imageData = currentImage;
@@ -70,8 +87,26 @@ export class AiService {
         type: 'image/png',
       });
 
+      // If we have canvas edit data, prepare that as well
+      let editMaskFile: any = null;
+      if (canvasEditData) {
+        let editData = canvasEditData;
+        if (canvasEditData.startsWith('data:image')) {
+          editData = canvasEditData.split(',')[1];
+        }
+        const editBuffer = Buffer.from(editData, 'base64');
+        editMaskFile = await toFile(editBuffer, 'edit-mask.png', {
+          type: 'image/png',
+        });
+      }
+
       // Set up images array with the current image first
       const images: any = [imageFile];
+
+      // If we have an edit mask, add it as the second image
+      if (editMaskFile) {
+        images.push(editMaskFile);
+      }
 
       // Add any additional images needed for editing
       // Process uploaded images if any
@@ -121,13 +156,12 @@ export class AiService {
         image: images,
         prompt: generatedPrompt,
         size: size,
-        quality: 'high',
+        quality: "low",
       });
 
       // Return the image data directly
       if (response.data[0].b64_json) {
         // Return the base64 image data with proper data URI prefix
-        console.log("Keeeep this one");
         return {
           imageData: response.data[0].b64_json,
           imageSize: size,
@@ -332,6 +366,82 @@ Replace template placeholders with the user's product(s) while addressing the us
     }
   }
 
+  async generateIntelligentEditPrompt(
+    userPrompt: string,
+    originalImage: string,
+    editMaskImage: string,
+  ): Promise<string> {
+    try {
+      const promptText = `
+        I need you to create a detailed AI image editing prompt based on the following:
+
+        1) ORIGINAL IMAGE: The first image is the original advertisement.
+        
+        2) EDIT MASK: The second image shows where the user has made edits using drawing tools or text. These areas represent regions the user wants to modify.
+        
+        3) USER INSTRUCTION: "${userPrompt}"
+
+        VERY IMPORTANT INSTRUCTIONS:
+        - Focus ONLY on the areas marked in the edit mask. These are the ONLY regions that should be changed.
+        - The rest of the image must remain COMPLETELY UNCHANGED.
+        - Analyze what the edit mask is showing - it may highlight areas to remove, replace, or modify.
+        - If the user has drawn on a specific area and asks to "remove" something, they're indicating what should be removed.
+        - If they've outlined an area and ask to add text or an object, place it precisely in that outlined area.
+        - If they've made a crude drawing of something, replace that drawing with a professional version of what they intended.
+        
+        Format your response as a clear, detailed prompt for the image editor that:
+        1. Precisely describes what should be changed in the marked areas
+        2. Explicitly instructs to preserve everything else exactly as is
+        3. Incorporates the specific intent from the user's instruction: "${userPrompt}"
+        
+        Your generated prompt should be directly usable by an AI image editor.
+      `;
+
+      const response = await axios.post(
+        'https://openrouter.ai/api/v1/chat/completions',
+        {
+          model: 'google/gemini-2.0-flash-exp:free',
+          messages: [
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'text',
+                  text: promptText.trim(),
+                },
+                {
+                  type: 'image_url',
+                  image_url: {
+                    url: originalImage,
+                  },
+                },
+                {
+                  type: 'image_url',
+                  image_url: {
+                    url: editMaskImage,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${this.configService.get<string>('OPENROUTER_API_KEY')}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+
+      return response.data.choices[0].message.content;
+    } catch (error) {
+      this.logger.error(`Error in generateIntelligentEditPrompt: ${error.message}`);
+      throw new BadRequestException(
+        `Error generating intelligent edit prompt: ${error.message}`,
+      );
+    }
+  }
+
   async generateImage(
     prompt: string,
     adCreatorData: IadCreatorData,
@@ -387,7 +497,7 @@ Replace template placeholders with the user's product(s) while addressing the us
         image: images,
         prompt: prompt,
         size: size,
-        quality: "high",
+        quality: "low",
       });
 
       return response.data[0].b64_json;
