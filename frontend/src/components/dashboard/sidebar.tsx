@@ -21,7 +21,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { api } from "@/lib/axios";
@@ -82,17 +81,6 @@ const ImageThumbnail = memo(({
 ));
 ImageThumbnail.displayName = 'ImageThumbnail';
 
-// Placeholder thumbnail for loading state
-const LoadingThumbnail = () => (
-  <div
-    className="relative w-16 h-16 rounded-md overflow-hidden border border-primary/30 shadow-md bg-muted/30 animate-pulse"
-    onClick={(e) => e.stopPropagation()}
-  >
-    <div className="absolute inset-0 flex items-center justify-center">
-      <RefreshIcon className="h-5 w-5 text-primary/50 animate-spin" />
-    </div>
-  </div>
-);
 
 // Memoized template card component
 const TemplateCard = memo(({ 
@@ -137,7 +125,6 @@ const Sidebar = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const [uploadingImages, setUploadingImages] = useState(false);
 
   // Data state
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
@@ -470,7 +457,6 @@ const Sidebar = () => {
                         onRemove={removeUploadedImage}
                       />
                     ))}
-                    {uploadingImages && <LoadingThumbnail />}
                   </div>
                 )}
 
@@ -756,7 +742,7 @@ const Sidebar = () => {
       </div>
     </div>
   ), [
-    uploadedImages, removeUploadedImage, uploadingImages, selectedTemplateUrl, activeTemplate, 
+    uploadedImages, removeUploadedImage, selectedTemplateUrl, activeTemplate, 
     displayedTemplates, handleTemplateSelection, openTemplateModal, clearTemplateSelection,
     imageSize, detailLevel, creativityLevel, handleProductImageUpload, handleCustomTemplateUpload,
     resetSettings

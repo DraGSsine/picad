@@ -3,7 +3,6 @@ import React from 'react';
 import { Cancel01Icon, PaintBoardIcon } from 'hugeicons-react';
 import Image from 'next/image';
 import { Badge } from '../ui/badge';
-import { Button } from '../ui/button';
 
 // Import Template interface 
 interface Template {
