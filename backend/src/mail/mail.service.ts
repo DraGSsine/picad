@@ -42,13 +42,13 @@ export class MailService {
                 font-weight: 600;
                 margin-bottom: 24px;
                 color: #1a1a1a;
-              ">DrawBrand</h1>
+              ">picad</h1>
               
               <p style="
                 font-size: 16px;
                 color: #4a4a4a;
                 margin-bottom: 32px;
-              ">Welcome to DrawBrand! Here's your verification code to get started with transforming your sketches and images into stunning logos:</p>
+              ">Welcome to picad! Here's your verification code to get started with transforming your sketches and images into stunning logos:</p>
               
               <div style="
                 font-size: 32px;
@@ -73,7 +73,7 @@ export class MailService {
                 font-size: 12px;
                 color: #9ca3af;
               ">
-                © ${new Date().getFullYear()} DrawBrand. All rights reserved.
+                © ${new Date().getFullYear()} picad. All rights reserved.
               </p>
             </div>
           </body>

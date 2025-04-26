@@ -194,9 +194,9 @@ const RightSidebar: React.FC = () => {
 
   return (
     <aside className="backdrop-blur-md bg-white rounded-3xl flex flex-col h-full w-full md:w-[350px] lg:w-[380px] flex-shrink-0 shadow-lg overflow-hidden z-10 border-[1.5px] border-gray-200/70">
-      <div className="flex-1 p-5 space-y-8 custom-scrollbar">
+      <div className="flex h-full flex-col p-5 space-y-8 custom-scrollbar">
         {/* Prompt Section */}
-        <section className="space-y-4">
+        <section className=" space-y-4" >
           <div className="flex items-center gap-2">
             <div className="h-6 w-1 bg-primary rounded-full"></div>
             <h3 className="text-sm font-semibold text-gray-800 flex items-center">
@@ -264,7 +264,7 @@ const RightSidebar: React.FC = () => {
         </section>
 
         {/* Export Section */}
-        <section className="space-y-4">
+        <section className=" space-y-4" >
           <div className="flex items-center gap-2">
             <div className="h-6 w-1 bg-secondary rounded-full"></div>
             <h3 className="text-sm font-semibold text-gray-800 flex items-center">
@@ -378,7 +378,7 @@ const RightSidebar: React.FC = () => {
         </section>
 
         {/* History Section */}
-        <section className="space-y-4">
+        <section className="flex-grow space-y-4">
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
               <div className="h-6 w-1 bg-primary rounded-full"></div>
@@ -403,8 +403,8 @@ const RightSidebar: React.FC = () => {
             )}
           </div>
           
-          <Card className="border-[1.5px] border-primary/20 shadow-md rounded-3xl overflow-hidden bg-card/40 hover:border-primary/30 transition-colors">
-            <div className="p-3 min-h-[100px] bg-white/60">
+          <Card className="border-[1.5px] h-[80%] border-primary/20 shadow-md rounded-3xl overflow-hidden bg-card/40 hover:border-primary/30 transition-colors">
+            <div className="p-3 h-full bg-white/60">
               {history.length === 0 ? (
                 <div className="flex flex-col items-center justify-center text-center space-y-2 py-5">
                   <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">

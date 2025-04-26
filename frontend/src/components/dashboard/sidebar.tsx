@@ -600,7 +600,7 @@ const Sidebar = () => {
             onClick={openTemplateModal}
             variant="outline"
             className="w-full py-3 text-sm bg-primary text-primary-foreground rounded-full border-none
-              hover:shadow-md hover:bg-primary/90 transition-all font-medium h-auto"
+              hover:shadow-md hover:bg-primary/90 transition-all font-medium h-auto hover:text-zinc-100"
           >
             Browse template gallery
             <ArrowRight01Icon className="h-4 w-4 ml-2" />
