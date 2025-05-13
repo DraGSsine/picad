@@ -86,7 +86,7 @@ const Hero = () => {
       </div>
 
       <div className="absolute bottom-8 left-0 right-0 flex justify-center animate-bounce z-10">
-        {/* "See how it works" link with improved styling */}
+        {/* "See how it works " link with improved styling */}
         <Link
           href="#how-it-works"
           className="group flex items-center text-foreground hover:text-primary gap-2 bg-gradient-to-r from-white/90 to-muted/80 backdrop-blur-md px-6 py-3 rounded-full text-sm font-medium border border-secondary/40 hover:border-primary/30 shadow-md hover:shadow-lg transform transition-all duration-300"
