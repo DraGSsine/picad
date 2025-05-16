@@ -63,54 +63,54 @@ const HowItWorks = () => {
   ];
 
   return (
-    <section id="how-it-works" className="py-24 md:py-32 relative overflow-hidden">
-      <div className="container mx-auto px-6 relative z-10">
+    <section id="how-it-works" className="py-16 sm:py-20 md:py-24 lg:py-32 relative overflow-hidden">
+      <div className="container mx-auto px-4 sm:px-6 relative z-10">
         {/* Section header with styling matching hero */}
-        <div className="text-center mb-20 max-w-3xl mx-auto">
-          <div className="inline-flex items-center px-5 py-2 bg-white/80 text-foreground font-semibold text-sm rounded-full mb-6 animate-fade-in shadow-sm border border-secondary/30">
+        <div className="text-center mb-12 sm:mb-16 md:mb-20 max-w-3xl mx-auto">
+          <div className="inline-flex items-center px-4 sm:px-5 py-2 bg-white/80 text-foreground font-semibold text-sm rounded-full mb-4 sm:mb-6 animate-fade-in shadow-sm border border-secondary/30">
             <PaintBoardIcon className="mr-2 h-4 w-4 text-primary" />
             <span>Simple Workflow</span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground animate-fade-in tracking-tight">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 text-foreground animate-fade-in tracking-tight">
             Create Amazing Ads in <span className="relative">
               <span className="relative z-10 text-primary">
                 4 Simple Steps
               </span>
-              <span className="absolute bottom-1 left-0 w-full h-5 bg-accent/30 -z-0 rounded-sm"></span>
+              <span className="absolute bottom-1 left-0 w-full h-4 sm:h-5 bg-accent/30 -z-0 rounded-sm"></span>
             </span>
           </h2>
-          <p className="text-lg md:text-xl text-foreground/90 max-w-2xl mx-auto leading-relaxed animate-fade-in">
+          <p className="text-base sm:text-lg md:text-xl text-foreground/90 max-w-2xl mx-auto leading-relaxed animate-fade-in px-2">
             Transform your product photos into professional ads with our intuitive tool. Upload, customize, and download — it&apos;s that simple.
           </p>
         </div>
         
-        <div className="space-y-24 md:space-y-28">
+        <div className="space-y-16 sm:space-y-20 md:space-y-24 lg:space-y-28">
           {steps.map((step, index) => (
             <div
               key={step.step}
-              className={`grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 items-center ${
+              className={`grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 lg:gap-12 items-center ${
                 index % 2 === 1 ? "md:flex-row-reverse" : ""
               }`}
             >
               {/* Text content with styling matching hero */}
               <div className={`${index % 2 === 1 ? "md:order-2" : ""} animate-fade-in`} style={{ animationDelay: `${step.delay}s` }}>
-                <div className="flex items-center space-x-4 mb-6">
-                  <div className={`flex items-center justify-center w-16 h-16 rounded-xl ${step.iconBg} shadow-md`}>
+                <div className="flex items-center space-x-3 sm:space-x-4 mb-4 sm:mb-6">
+                  <div className={`flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl ${step.iconBg} shadow-md`}>
                     {step.icon}
                   </div>
-                  <div className="text-4xl font-bold text-primary opacity-80">0{step.step}</div>
+                  <div className="text-3xl md:text-4xl font-bold text-primary opacity-80">0{step.step}</div>
                 </div>
-                <h3 className="text-2xl md:text-3xl font-bold mb-4 text-foreground">{step.title}</h3>
-                <p className="text-lg text-foreground/90 mb-6 leading-relaxed">{step.description}</p>
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 text-foreground">{step.title}</h3>
+                <p className="text-base sm:text-lg text-foreground/90 mb-4 sm:mb-6 leading-relaxed">{step.description}</p>
                 
                 {/* Bullet points with modern styling */}
-                <ul className="space-y-4">
+                <ul className="space-y-3 sm:space-y-4">
                   {step.features.map((feature, i) => (
                     <li key={i} className="flex items-center text-foreground">
-                      <div className="w-7 h-7 rounded-full bg-secondary/40 flex items-center justify-center shadow-sm mr-3">
+                      <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-secondary/40 flex items-center justify-center shadow-sm mr-2 sm:mr-3">
                         {feature.icon}
                       </div>
-                      <span className="text-foreground/90">{feature.text}</span>
+                      <span className="text-sm sm:text-base text-foreground/90">{feature.text}</span>
                     </li>
                   ))}
                 </ul>
@@ -120,24 +120,24 @@ const HowItWorks = () => {
               <div className={`${index % 2 === 1 ? "md:order-1" : ""} relative animate-fade-in`} style={{ animationDelay: `${step.delay + 0.2}s` }}>
                 <div className="relative rounded-xl overflow-hidden shadow-lg border border-secondary/30 bg-white/80 backdrop-blur-sm p-2">
                   {/* Card with improved contrast */}
-                  <div className="aspect-video w-full relative rounded-lg overflow-hidden bg-white/90 backdrop-blur-lg">
-                    <div className="w-full h-full flex items-center justify-center p-6">
+                  <div className="aspect-[4/3] sm:aspect-video w-full relative rounded-lg overflow-hidden bg-white/90 backdrop-blur-lg">
+                    <div className="w-full h-full flex items-center justify-center p-4 sm:p-6">
                       {/* Modern step visualization with better contrast */}
                       <div className="text-center max-w-xs mx-auto">
-                        <div className={`mx-auto mb-6 w-20 h-20 rounded-full ${step.iconBg} flex items-center justify-center`}>
+                        <div className={`mx-auto mb-4 sm:mb-6 w-16 sm:w-20 h-16 sm:h-20 rounded-full ${step.iconBg} flex items-center justify-center`}>
                           {step.icon}
                         </div>
-                        <h4 className="text-2xl font-bold mb-3 text-primary">Step {step.step}</h4>
-                        <p className="text-foreground/70">
+                        <h4 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-3 text-primary">Step {step.step}</h4>
+                        <p className="text-sm sm:text-base text-foreground/70">
                           {step.title}
                         </p>
                         
                         {/* Progress indicator */}
-                        <div className="mt-6 flex justify-center space-x-2">
+                        <div className="mt-4 sm:mt-6 flex justify-center space-x-2">
                           {[1, 2, 3, 4].map((num) => (
                             <div 
                               key={num} 
-                              className={`h-2 rounded-full ${num === step.step ? 'w-8 bg-primary' : 'w-2 bg-gray-200'} 
+                              className={`h-1.5 sm:h-2 rounded-full ${num === step.step ? 'w-6 sm:w-8 bg-primary' : 'w-2 bg-gray-200'} 
                               transition-all duration-300`}
                             />
                           ))}
@@ -148,8 +148,8 @@ const HowItWorks = () => {
                 </div>
                 
                 {/* Simplified decorative elements without gradients */}
-                <div className="absolute -z-10 -bottom-4 -right-4 w-32 h-32 rounded-full bg-accent/20 blur-xl"></div>
-                <div className="absolute -z-10 -top-4 -left-4 w-24 h-24 rounded-full bg-primary/10 blur-xl"></div>
+                <div className="absolute -z-10 -bottom-4 -right-4 w-28 sm:w-32 h-28 sm:h-32 rounded-full bg-accent/20 blur-xl"></div>
+                <div className="absolute -z-10 -top-4 -left-4 w-20 sm:w-24 h-20 sm:h-24 rounded-full bg-primary/10 blur-xl"></div>
               </div>
             </div>
           ))}
